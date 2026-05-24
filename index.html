@@ -1,0 +1,2600 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Finance OS">
+<meta name="theme-color" content="#0a0a0a">
+<title>Finance OS</title>
+<style>
+  :root{--bg:#0a0a0a;--bg2:#141414;--bg3:#1e1e1e;--bg4:#282828;--border:rgba(255,255,255,0.08);--border2:rgba(255,255,255,0.14);--text:#f0f0f0;--text2:#888;--text3:#555;--green:#1db954;--red:#e8453c;--blue:#3b82f6;--amber:#f59e0b;--radius:12px;--radius-sm:8px;}
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+  html,body{height:100%;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text',sans-serif;overflow:hidden;}
+  .app{display:flex;flex-direction:column;height:100vh;height:-webkit-fill-available;max-width:430px;margin:0 auto;}
+  .screen{display:none;flex:1;overflow-y:auto;padding:20px 16px 100px;}
+  .screen.active{display:block;}
+  .nav{display:flex;background:var(--bg2);border-top:0.5px solid var(--border);padding:10px 12px 24px;flex-shrink:0;overflow-x:auto;scroll-behavior:smooth;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;gap:6px;scrollbar-width:none;}
+  .nav::-webkit-scrollbar{display:none;}
+  .nav-btn{display:flex;flex-direction:column;align-items:center;gap:4px;background:none;border:none;cursor:pointer;padding:8px 14px;flex-shrink:0;scroll-snap-align:center;border-radius:14px;transition:background 0.2s,padding 0.2s;min-width:60px;-webkit-tap-highlight-color:transparent;}
+  .nav-icon{font-size:22px;line-height:1;opacity:0.55;transition:font-size 0.2s,opacity 0.2s;}
+  .nav-label{font-size:11px;color:var(--text2);letter-spacing:0.02em;opacity:0.7;transition:font-size 0.2s,color 0.2s,opacity 0.2s;}
+  .nav-btn.active{background:rgba(29,185,84,0.12);padding:10px 18px;}
+  .nav-btn.active .nav-icon{font-size:30px;opacity:1;color:var(--green);}
+  .nav-btn.active .nav-label{font-size:13px;color:var(--green);font-weight:600;opacity:1;}
+  .screen-header{margin-bottom:20px;}
+  .screen-title{font-size:28px;font-weight:700;letter-spacing:-0.5px;}
+  .screen-sub{font-size:13px;color:var(--text2);margin-top:2px;}
+  .card{background:var(--bg2);border:0.5px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:12px;}
+  .card-title{font-size:12px;color:var(--text2);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:14px;font-weight:600;}
+  .metric-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;}
+  .metric{background:var(--bg2);border:0.5px solid var(--border);border-radius:var(--radius-sm);padding:14px;}
+  .metric-label{font-size:11px;color:var(--text2);margin-bottom:6px;text-transform:uppercase;letter-spacing:0.06em;}
+  .metric-value{font-size:20px;font-weight:600;letter-spacing:-0.5px;}
+  .mom{font-size:11px;font-weight:500;margin-top:4px;letter-spacing:-0.1px;}
+  .mom-good{color:var(--green);}
+  .mom-bad{color:var(--red);}
+  .mom-flat{color:var(--text2);}
+  .green{color:var(--green);}.red{color:var(--red);}.blue{color:var(--blue);}.amber{color:var(--amber);}
+  label{font-size:12px;color:var(--text2);display:block;margin-bottom:6px;}
+  input,select,textarea{width:100%;background:var(--bg3);border:0.5px solid var(--border2);border-radius:var(--radius-sm);color:var(--text);font-size:16px;padding:12px 14px;margin-bottom:12px;appearance:none;-webkit-appearance:none;}
+  input:focus,select:focus,textarea:focus{outline:none;border-color:var(--green);}
+  select option{background:var(--bg3);}
+  textarea{resize:none;height:72px;font-family:inherit;}
+  .btn{width:100%;padding:14px;border-radius:var(--radius-sm);border:none;font-size:15px;font-weight:600;cursor:pointer;}
+  .btn-primary{background:var(--green);color:#000;}
+  .btn-secondary{background:var(--bg3);color:var(--text);border:0.5px solid var(--border2);}
+  .btn-sm{padding:7px 12px;font-size:12px;width:auto;border-radius:var(--radius-sm);border:0.5px solid var(--border2);background:var(--bg3);color:var(--text);cursor:pointer;}
+  .toggle-row{display:flex;background:var(--bg3);border-radius:var(--radius-sm);padding:3px;margin-bottom:16px;}
+  .toggle-btn{flex:1;padding:9px;border:none;border-radius:6px;background:none;color:var(--text2);font-size:14px;font-weight:500;cursor:pointer;}
+  .toggle-btn.active{background:var(--bg);color:var(--text);}
+  .toggle-btn.active.expense{color:var(--red);}
+  .toggle-btn.active.income{color:var(--green);}
+  .row{display:flex;gap:10px;}.row>div{flex:1;}
+  .amount-row{display:flex;gap:8px;margin-bottom:12px;}
+  .amount-row input{flex:1;margin-bottom:0;}
+  .amount-row select{width:90px;margin-bottom:0;flex-shrink:0;}
+  .amort-check-row{display:flex;align-items:center;gap:10px;margin-bottom:12px;padding:12px;background:var(--bg3);border-radius:var(--radius-sm);border:0.5px solid var(--border);}
+  .amort-check-row label{margin:0;font-size:13px;color:var(--text2);flex:1;}
+  .amort-check-row input[type=checkbox]{width:18px;height:18px;margin:0;accent-color:var(--green);flex-shrink:0;}
+  .amort-extra{display:none;}.amort-extra.visible{display:block;}
+  .tx-item{padding:12px 0;border-bottom:0.5px solid var(--border);}.tx-item:last-child{border-bottom:none;}
+  .tx-top{display:flex;justify-content:space-between;align-items:flex-start;}
+  .tx-name{font-size:14px;font-weight:500;}.tx-amount{font-size:14px;font-weight:600;}
+  .tx-desc{font-size:12px;color:var(--text3);margin-top:3px;font-style:italic;}
+  .tx-meta{font-size:11px;color:var(--text2);}
+  .pill{display:inline-block;font-size:10px;padding:2px 7px;border-radius:99px;background:var(--bg4);color:var(--text2);margin-left:5px;}
+  .pill.etf{background:rgba(29,185,84,0.12);color:var(--green);}
+  .pill.stock{background:rgba(59,130,246,0.12);color:var(--blue);}
+  .pill.spread{background:rgba(59,130,246,0.15);color:var(--blue);}
+  .bar-row{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
+  .bar-cat{font-size:12px;color:var(--text2);width:90px;flex-shrink:0;}
+  .bar-track{flex:1;height:4px;background:var(--bg4);border-radius:2px;overflow:hidden;}
+  .bar-fill{height:100%;border-radius:2px;}
+  .bar-amt{font-size:12px;color:var(--text);width:56px;text-align:right;flex-shrink:0;}
+  .asset-row{display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:0.5px solid var(--border);}
+  .asset-row:last-child{border-bottom:none;}
+  .asset-left{display:flex;align-items:center;gap:10px;}
+  .asset-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+  .asset-name{font-size:14px;}.asset-pct{font-size:11px;color:var(--text2);margin-top:1px;}
+  .asset-val{font-size:15px;font-weight:600;}
+  .proj-row{display:flex;justify-content:space-between;padding:10px 0;border-bottom:0.5px solid var(--border);}
+  .proj-row:last-child{border-bottom:none;}
+  .proj-year{font-size:13px;color:var(--text2);}.proj-val{font-size:13px;font-weight:600;}
+  .slider-block{margin-bottom:18px;}
+  .slider-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;}
+  .slider-label{font-size:13px;color:var(--text2);}
+  .slider-input{width:110px;background:var(--bg3);border:0.5px solid var(--border2);border-radius:var(--radius-sm);color:var(--text);font-size:14px;font-weight:600;padding:5px 10px;text-align:right;margin-bottom:0;}
+  .slider-input:focus{border-color:var(--green);outline:none;}
+  input[type=range]{-webkit-appearance:none;appearance:none;height:4px;background:var(--bg4);border-radius:2px;padding:0;margin-bottom:0;border:none;}
+  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;height:20px;border-radius:50%;background:var(--green);cursor:pointer;}
+  .retire-hero{text-align:center;padding:20px 0 8px;}
+  .retire-year{font-size:52px;font-weight:700;letter-spacing:-2px;color:var(--green);}
+  .retire-age{font-size:16px;color:var(--text2);margin-top:4px;}
+  .retire-target{font-size:12px;color:var(--text3);margin-top:8px;}
+  .insight-box{background:var(--bg3);border-radius:var(--radius-sm);padding:12px 14px;margin-bottom:10px;font-size:13px;line-height:1.6;color:var(--text2);}
+  .insight-tag{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:6px;}
+  .tag-good{color:var(--green);}.tag-warn{color:var(--amber);}.tag-info{color:var(--blue);}
+  .empty{font-size:13px;color:var(--text3);text-align:center;padding:20px 0;}
+  .nw-total{font-size:38px;font-weight:700;letter-spacing:-1px;}
+  .divider{height:0.5px;background:var(--border);margin:16px 0;}
+  .success-flash{position:fixed;top:20px;left:50%;transform:translateX(-50%);background:var(--green);color:#000;font-size:13px;font-weight:600;padding:10px 20px;border-radius:99px;z-index:999;opacity:0;transition:opacity 0.2s;pointer-events:none;}
+  .success-flash.show{opacity:1;}
+  .tx-item{cursor:pointer;-webkit-tap-highlight-color:rgba(255,255,255,0.05);padding:12px 14px;border-radius:var(--radius-sm);transition:background 0.1s;}
+  /* iOS-style toggle switch */
+  .toggle-line{display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-top:0.5px solid var(--border);margin-top:6px;}
+  .toggle-line:first-child{border-top:none;margin-top:0;}
+  .toggle-title{font-size:14px;font-weight:500;color:var(--text);}
+  .toggle-sub{font-size:12px;color:var(--text3);margin-top:2px;}
+  .switch{position:relative;display:inline-block;width:52px;height:32px;flex-shrink:0;margin-left:12px;}
+  .switch input{opacity:0;width:0;height:0;}
+  .switch-slider{position:absolute;cursor:pointer;inset:0;background:var(--bg3);border-radius:32px;transition:.25s;}
+  .switch-slider:before{position:absolute;content:"";height:28px;width:28px;left:2px;top:2px;background:#fff;border-radius:50%;transition:.25s;box-shadow:0 2px 4px rgba(0,0,0,0.3);}
+  .switch input:checked + .switch-slider{background:var(--green);}
+  .switch input:checked + .switch-slider:before{transform:translateX(20px);}
+  /* Phase row in multi-country mode */
+  .phase-row{background:var(--bg3);border-radius:var(--radius-sm);padding:12px;margin-bottom:10px;}
+  .phase-row-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;gap:8px;}
+  .phase-country-select{flex:1;background:var(--bg2);border:0.5px solid var(--border);color:var(--text);padding:8px 10px;border-radius:8px;font-size:14px;margin:0;}
+  .phase-remove{background:none;border:none;color:var(--text3);font-size:20px;cursor:pointer;padding:4px 8px;line-height:1;}
+  .phase-remove:hover{color:var(--red);}
+  .phase-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;}
+  .phase-grid label{font-size:11px;color:var(--text2);text-transform:uppercase;letter-spacing:0.04em;margin-bottom:4px;display:block;}
+  .phase-grid input,.phase-grid select{width:100%;background:var(--bg2);border:0.5px solid var(--border);color:var(--text);padding:8px 10px;border-radius:8px;font-size:14px;margin:0;}
+  .phase-summary{font-size:12px;color:var(--text3);margin-top:6px;padding-top:8px;border-top:0.5px solid var(--border);}
+  .phase-pill{display:inline-block;background:rgba(29,185,84,0.12);color:var(--green);padding:2px 8px;border-radius:99px;font-size:11px;font-weight:600;margin-left:6px;}
+  .tx-item:active{background:var(--bg3);}
+  .day-group{margin-bottom:24px;}
+  .day-header{display:flex;justify-content:space-between;align-items:baseline;padding:16px 4px 12px;border-bottom:0.5px solid var(--border);margin-bottom:10px;}
+  .day-label{font-size:19px;font-weight:700;color:var(--text);letter-spacing:-0.4px;line-height:1.2;}
+  .day-total{font-size:15px;font-weight:600;color:var(--text2);}
+  .day-total.green{color:var(--green);}
+  .day-total.red{color:var(--text);}
+  .day-txs .tx-item{padding:12px 12px;}
+  .day-txs .tx-item + .tx-item{border-top:0.5px solid var(--border);}
+  .tx-item:active{background:var(--bg3);}
+  .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:300;align-items:flex-start;justify-content:center;padding:60px 16px 16px;overflow-y:auto;}
+  .modal-overlay.visible{display:flex;}
+  .modal{background:var(--bg2);border:0.5px solid var(--border);border-radius:var(--radius);padding:20px;width:100%;max-width:460px;}
+  .modal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;}
+  .modal-title{font-size:18px;font-weight:700;letter-spacing:-0.3px;}
+  .modal-close{background:none;border:none;color:var(--text2);font-size:28px;cursor:pointer;padding:0 6px;line-height:1;}
+  .api-note{font-size:11px;color:var(--text3);text-align:center;margin-top:8px;}
+  .port-stat{display:flex;justify-content:space-between;align-items:baseline;padding:6px 0;}
+  .port-stat-label{font-size:13px;color:var(--text2);}
+  .port-stat-val{font-size:15px;font-weight:600;}
+  .port-headline{padding:8px 0 4px;}
+  .port-current-label{font-size:11px;color:var(--text2);text-transform:uppercase;letter-spacing:0.08em;}
+  .port-current-val{font-size:36px;font-weight:700;letter-spacing:-1px;margin-top:4px;}
+  .port-gain-line{font-size:14px;font-weight:600;margin-top:6px;}
+  .split-bar{height:8px;border-radius:4px;background:var(--bg4);overflow:hidden;display:flex;margin:10px 0 6px;}
+  .split-etf{height:100%;background:var(--green);}
+  .split-stock{height:100%;background:var(--blue);}
+  .split-legend{display:flex;justify-content:space-between;font-size:12px;}
+  .split-legend-item{display:flex;align-items:center;gap:6px;color:var(--text2);}
+  .split-dot{width:8px;height:8px;border-radius:50%;}
+  .pos-filter{display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap;}
+  .filter-btn{padding:5px 12px;border-radius:99px;border:0.5px solid var(--border2);background:none;color:var(--text2);font-size:12px;cursor:pointer;}
+  .filter-btn.active{background:var(--green);color:#000;border-color:var(--green);}
+  .pos-item{padding:14px 0;border-bottom:0.5px solid var(--border);}
+  .pos-item:last-child{border-bottom:none;}
+  .pos-clickable{cursor:pointer;}
+  .pos-clickable:active{background:var(--bg3);}
+  .pos-top{display:flex;justify-content:space-between;align-items:flex-start;}
+  .pos-sym{font-size:15px;font-weight:700;letter-spacing:-0.2px;}
+  .pos-val{font-size:15px;font-weight:600;}
+  .pos-bot{display:flex;justify-content:space-between;margin-top:5px;}
+  .pos-detail{font-size:11px;color:var(--text2);}
+  .pos-pnl{font-size:12px;font-weight:600;}
+  .pos-allocation{font-size:11px;color:var(--text3);margin-top:3px;font-weight:500;}
+  .pos-edit{display:none;margin-top:10px;padding:12px;background:var(--bg3);border-radius:var(--radius-sm);}
+  .pos-edit.visible{display:block;}
+  .pos-edit-row{display:flex;gap:8px;align-items:flex-end;}
+  .pos-edit-row > div{flex:1;}
+  .pos-edit input{margin-bottom:0;font-size:14px;padding:8px 10px;}
+  .pos-edit-btn{padding:9px 14px;font-size:13px;background:var(--green);color:#000;border:none;border-radius:var(--radius-sm);cursor:pointer;font-weight:600;}
+  .csv-upload{display:none;}
+  .info-banner{padding:12px 14px;background:rgba(59,130,246,0.08);border:0.5px solid rgba(59,130,246,0.2);border-radius:var(--radius-sm);font-size:12px;color:var(--blue);margin-bottom:12px;line-height:1.5;}
+  .info-banner strong{color:#60a5fa;font-weight:600;}
+  .month-nav{display:flex;gap:6px;overflow-x:auto;padding:0 0 12px;margin:0 -16px 16px;padding-left:16px;padding-right:16px;-webkit-overflow-scrolling:touch;scrollbar-width:none;}
+  .month-nav::-webkit-scrollbar{display:none;}
+  .month-chip{flex-shrink:0;padding:7px 14px;border-radius:99px;border:0.5px solid var(--border2);background:none;color:var(--text2);font-size:12px;cursor:pointer;white-space:nowrap;}
+  .month-chip.active{background:var(--green);color:#000;border-color:var(--green);font-weight:600;}
+  .month-chip.future{opacity:0.6;}
+  .year-tabs{display:flex;gap:6px;margin-bottom:10px;}
+  .year-tab{padding:5px 12px;border-radius:var(--radius-sm);border:0.5px solid var(--border2);background:none;color:var(--text2);font-size:12px;cursor:pointer;}
+  .year-tab.active{background:var(--bg3);color:var(--text);border-color:var(--border2);}
+  .cash-row{display:grid;grid-template-columns:1fr 80px 100px;gap:8px;align-items:center;margin-bottom:10px;}
+  .cash-row select,.cash-row input{margin-bottom:0;font-size:14px;padding:8px 10px;}
+  .cash-total{font-size:13px;color:var(--text2);padding-top:8px;border-top:0.5px solid var(--border);margin-top:8px;display:flex;justify-content:space-between;}
+  .cash-total-val{font-weight:600;color:var(--text);}
+  .fx-status{font-size:11px;color:var(--text3);margin-top:6px;}
+  .fx-row{display:flex;justify-content:space-between;padding:8px 0;border-bottom:0.5px solid var(--border);}
+  .fx-row:last-child{border-bottom:none;}
+  .fx-pair{font-size:13px;color:var(--text2);}
+  .fx-rate{font-size:14px;font-weight:600;}
+  .flat-stat{display:flex;justify-content:space-between;padding:7px 0;border-bottom:0.5px solid var(--border);}
+  .flat-stat:last-child{border-bottom:none;}
+  .flat-stat-label{font-size:13px;color:var(--text2);}
+  .flat-stat-val{font-size:14px;font-weight:600;}
+  .delete-x{background:none;border:none;color:var(--text3);font-size:18px;cursor:pointer;padding:0 4px;line-height:1;}
+  .delete-x:hover{color:var(--red);}
+  .private-toggle{position:fixed;top:calc(env(safe-area-inset-top,12px) + 12px);right:16px;z-index:200;background:var(--bg2);border:0.5px solid var(--border2);border-radius:50%;width:40px;height:40px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:18px;color:var(--text2);box-shadow:0 2px 8px rgba(0,0,0,0.25);}
+  .private-toggle:active{background:var(--bg3);}
+  /* Lock screen */
+  .lock-screen{position:fixed;inset:0;background:var(--bg);z-index:9999;display:none;flex-direction:column;align-items:center;justify-content:center;padding:24px;}
+  .lock-screen.visible{display:flex;}
+  .lock-icon{font-size:48px;margin-bottom:20px;}
+  .lock-title{font-size:22px;font-weight:700;letter-spacing:-0.3px;margin-bottom:8px;text-align:center;}
+  .lock-sub{font-size:14px;color:var(--text2);margin-bottom:32px;text-align:center;max-width:300px;line-height:1.5;}
+  .pin-dots{display:flex;gap:14px;margin-bottom:28px;}
+  .pin-dot{width:16px;height:16px;border-radius:50%;border:1.5px solid var(--text2);background:transparent;transition:all 0.15s;}
+  .pin-dot.filled{background:var(--green);border-color:var(--green);}
+  .pin-dot.error{background:var(--red);border-color:var(--red);animation:shake 0.4s;}
+  @keyframes shake{0%,100%{transform:translateX(0);}25%{transform:translateX(-6px);}75%{transform:translateX(6px);}}
+  .pin-pad{display:grid;grid-template-columns:repeat(3,88px);gap:18px;}
+  .pin-key{width:88px;height:88px;border-radius:50%;background:var(--bg2);border:0.5px solid var(--border);color:var(--text);font-size:32px;font-weight:400;cursor:pointer;display:flex;align-items:center;justify-content:center;user-select:none;-webkit-tap-highlight-color:transparent;touch-action:manipulation;}
+  .pin-key:active{background:var(--bg3);transform:scale(0.95);}
+  .pin-key.special{background:transparent;border:none;font-size:14px;color:var(--text2);}
+  .pin-error{color:var(--red);font-size:13px;margin-top:16px;height:18px;}
+  .lock-link{font-size:13px;color:var(--blue);margin-top:20px;cursor:pointer;background:none;border:none;padding:8px 16px;}
+  .recovery-code-display{background:var(--bg2);border:1px solid var(--green);border-radius:var(--radius-sm);padding:16px;font-family:'SF Mono',monospace;font-size:16px;letter-spacing:2px;text-align:center;margin:16px 0;color:var(--green);word-break:break-all;}
+  .recovery-input{font-family:'SF Mono',monospace;letter-spacing:1px;text-transform:uppercase;}
+  .face-id-btn{background:var(--bg2);border:0.5px solid var(--border2);border-radius:50%;width:56px;height:56px;display:flex;align-items:center;justify-content:center;font-size:24px;cursor:pointer;margin-top:20px;}
+  .face-id-btn:active{background:var(--bg3);}
+  .private-mode .private-mask,.private-mode .nw-total,.private-mode .metric-value,.private-mode .port-current-val,.private-mode .port-stat-val,.private-mode .port-gain-line,.private-mode .pos-val,.private-mode .pos-pnl,.private-mode .tx-amount,.private-mode .asset-val,.private-mode .bar-amt,.private-mode .cash-total-val,.private-mode .flat-stat-val,.private-mode .proj-val,.private-mode .retire-year,.private-mode .port-total,.private-mode .port-current,.private-mode .pos-detail,.private-mode .pos-allocation,.private-mode #split-etf-pct,.private-mode #split-stock-pct,.private-mode #pos-count,.private-mode #crypto-total,.private-mode #port-cost,.private-mode #port-pnl,.private-mode .split-bar,.private-mode .split-etf,.private-mode .split-stock,.private-mode .crypto-val,.private-mode .crypto-qty,.private-mode .mom,.private-mode .day-total{filter:blur(8px);user-select:none;transition:filter 0.15s;}
+  .private-mode .private-mask:active,.private-mode .nw-total:active,.private-mode .metric-value:active,.private-mode .port-current-val:active,.private-mode .pos-val:active,.private-mode .tx-amount:active,.private-mode .asset-val:active{filter:none;}
+</style>
+</head>
+<body>
+
+<!-- LOCK SCREEN: shown when app is locked -->
+<div id="lock-screen" class="lock-screen">
+  <div class="lock-icon">🔒</div>
+  <div class="lock-title" id="lock-title">Finance OS</div>
+  <div class="lock-sub" id="lock-sub">Enter your PIN</div>
+  <div class="pin-dots" id="pin-dots">
+    <div class="pin-dot"></div><div class="pin-dot"></div><div class="pin-dot"></div><div class="pin-dot"></div>
+  </div>
+  <div class="pin-pad">
+    <button class="pin-key" onclick="pinKey(1)">1</button>
+    <button class="pin-key" onclick="pinKey(2)">2</button>
+    <button class="pin-key" onclick="pinKey(3)">3</button>
+    <button class="pin-key" onclick="pinKey(4)">4</button>
+    <button class="pin-key" onclick="pinKey(5)">5</button>
+    <button class="pin-key" onclick="pinKey(6)">6</button>
+    <button class="pin-key" onclick="pinKey(7)">7</button>
+    <button class="pin-key" onclick="pinKey(8)">8</button>
+    <button class="pin-key" onclick="pinKey(9)">9</button>
+    <button class="pin-key special" style="visibility:hidden;"></button>
+    <button class="pin-key" onclick="pinKey(0)">0</button>
+    <button class="pin-key special" onclick="pinDelete()">←</button>
+  </div>
+  <div class="pin-error" id="pin-error"></div>
+  <button class="lock-link" onclick="showRecoveryEntry()">Forgot PIN</button>
+</div>
+
+<!-- SETUP SCREEN: shown on first launch to create PIN -->
+<div id="setup-screen" class="lock-screen">
+  <div class="lock-icon">🔐</div>
+  <div class="lock-title">Set up your PIN</div>
+  <div class="lock-sub" id="setup-sub">Choose a 4-digit PIN to protect your data.</div>
+  <div class="pin-dots" id="setup-pin-dots">
+    <div class="pin-dot"></div><div class="pin-dot"></div><div class="pin-dot"></div><div class="pin-dot"></div>
+  </div>
+  <div class="pin-pad">
+    <button class="pin-key" onclick="setupKey(1)">1</button>
+    <button class="pin-key" onclick="setupKey(2)">2</button>
+    <button class="pin-key" onclick="setupKey(3)">3</button>
+    <button class="pin-key" onclick="setupKey(4)">4</button>
+    <button class="pin-key" onclick="setupKey(5)">5</button>
+    <button class="pin-key" onclick="setupKey(6)">6</button>
+    <button class="pin-key" onclick="setupKey(7)">7</button>
+    <button class="pin-key" onclick="setupKey(8)">8</button>
+    <button class="pin-key" onclick="setupKey(9)">9</button>
+    <button class="pin-key special" style="visibility:hidden;"></button>
+    <button class="pin-key" onclick="setupKey(0)">0</button>
+    <button class="pin-key special" onclick="setupDelete()">←</button>
+  </div>
+  <div class="pin-error" id="setup-error"></div>
+</div>
+
+<!-- RECOVERY CODE DISPLAY: shown after PIN set, asks user to save the code -->
+<div id="recovery-display-screen" class="lock-screen">
+  <div class="lock-icon">📝</div>
+  <div class="lock-title">Save your recovery code</div>
+  <div class="lock-sub">If you forget your PIN, this code unlocks the app. <strong>Screenshot it now and save it somewhere safe</strong> (Apple Notes, password manager, email).</div>
+  <div class="recovery-code-display" id="recovery-code-display"></div>
+  <button class="btn btn-primary" style="max-width:280px;" onclick="confirmRecoverySaved()">I've saved it - continue</button>
+  <p class="api-note" style="margin-top:12px;max-width:280px;text-align:center;">This code can never be shown to you again. Without it, you cannot recover a forgotten PIN and would need to clear all data to use the app again.</p>
+</div>
+
+<!-- RECOVERY ENTRY: forgot PIN flow -->
+<div id="recovery-entry-screen" class="lock-screen">
+  <div class="lock-icon">🔑</div>
+  <div class="lock-title">Enter recovery code</div>
+  <div class="lock-sub">Paste the 16-character recovery code you saved.</div>
+  <input type="text" id="recovery-input" class="recovery-input" placeholder="XXXX-XXXX-XXXX-XXXX" maxlength="19" style="max-width:280px;text-align:center;font-size:16px;">
+  <button class="btn btn-primary" style="max-width:280px;" onclick="verifyRecovery()">Unlock and reset PIN</button>
+  <div class="pin-error" id="recovery-error"></div>
+  <button class="lock-link" onclick="backToLock()">Back to PIN</button>
+</div>
+
+<div class="app">
+
+<!-- LOG TAB -->
+<div id="screen-log" class="screen active">
+  <div class="screen-header"><div class="screen-title">Log</div><div class="screen-sub">Record every euro and dirham.</div></div>
+  <div class="toggle-row">
+    <button class="toggle-btn active expense" onclick="setType('expense',this)">Expense</button>
+    <button class="toggle-btn income" onclick="setType('income',this)">Income</button>
+  </div>
+  <label>Amount</label>
+  <div class="amount-row">
+    <input id="tx-amount" type="number" inputmode="decimal" placeholder="0.00">
+    <select id="tx-cur"><option value="EUR">EUR</option><option value="AED">AED</option></select>
+  </div>
+  <label>Description</label>
+  <textarea id="tx-desc" placeholder="e.g. Groceries at Rewe, weekly shop"></textarea>
+  <div class="row">
+    <div>
+      <label>Category</label>
+      <select id="tx-cat">
+        <optgroup label="Essentials"><option>Housing</option><option>Utilities</option><option>Telecom</option><option>Groceries</option><option>Transport</option><option>Health</option><option>Pet</option><option>Baby</option></optgroup>
+        <optgroup label="Lifestyle"><option>Dining Out</option><option>Travel</option><option>Entertainment</option><option>Shopping</option><option>Personal Care</option></optgroup>
+        <optgroup label="Financial"><option>IBKR</option><option>Sobha</option><option>Crypto</option><option>Savings</option></optgroup>
+        <optgroup label="Income"><option>Salary</option><option>Bonus</option><option>Side income</option><option>Refund</option></optgroup>
+        <optgroup label="One-offs"><option>Gift</option><option>Education</option><option>Other</option></optgroup>
+      </select>
+    </div>
+    <div><label>Date</label><input id="tx-date" type="date"></div>
+  </div>
+  <div class="amort-check-row">
+    <input type="checkbox" id="amort-check" onchange="toggleAmort()">
+    <label for="amort-check">Spread this expense over multiple months</label>
+  </div>
+  <div class="amort-extra" id="amort-extra">
+    <label>Spread over how many months?</label>
+    <input id="amort-months" type="number" inputmode="numeric" placeholder="e.g. 4" min="2" max="36">
+  </div>
+  <button class="btn btn-primary" onclick="logTransaction()">Add entry</button>
+</div>
+
+<!-- OVERVIEW TAB -->
+<div id="screen-overview" class="screen">
+  <div class="screen-header"><div class="screen-title" id="ov-month-title">This month</div><div class="screen-sub">Your personal P&L</div></div>
+  <div class="year-tabs" id="year-tabs"></div>
+  <div class="month-nav" id="month-nav"></div>
+  <div class="metric-grid">
+    <div class="metric"><div class="metric-label">Income</div><div class="metric-value green" id="ov-income">€0</div><div id="ov-income-mom"></div></div>
+    <div class="metric"><div class="metric-label">Spent</div><div class="metric-value red" id="ov-spent">€0</div><div id="ov-spent-mom"></div></div>
+    <div class="metric"><div class="metric-label">Net</div><div class="metric-value" id="ov-net">€0</div><div id="ov-net-mom"></div></div>
+    <div class="metric"><div class="metric-label">Savings rate</div><div class="metric-value" id="ov-sr">—</div><div id="ov-sr-mom"></div></div>
+  </div>
+  <div class="card"><div class="card-title">By category</div><div id="cat-bars"><div class="empty">No expenses yet</div></div></div>
+  <div class="card"><div class="card-title">Entries</div><div id="tx-list"><div class="empty">Nothing logged yet</div></div></div>
+  <button class="btn btn-secondary" style="margin-bottom:10px;" onclick="getInsight()">Ask Claude for insight ↗</button>
+  <div id="insight-area"></div>
+  <p class="api-note">Requires Anthropic API key (More tab)</p>
+</div>
+
+<!-- PORTFOLIO TAB -->
+<div id="screen-portfolio" class="screen">
+  <div class="screen-header"><div class="screen-title">Portfolio</div><div class="screen-sub" id="port-updated">—</div></div>
+  <div id="port-stale-banner" style="display:none;padding:10px 12px;background:rgba(245,158,11,0.1);border:0.5px solid rgba(245,158,11,0.3);border-radius:var(--radius-sm);font-size:12px;color:var(--amber);margin-bottom:12px;line-height:1.5;"></div>
+  <div class="card">
+    <div class="port-headline">
+      <div class="port-current-label">Current value</div>
+      <div class="port-current-val" id="port-current">—</div>
+      <div class="port-gain-line" id="port-gain">—</div>
+    </div>
+    <div class="divider"></div>
+    <div class="port-stat"><span class="port-stat-label">Total invested (cost basis)</span><span class="port-stat-val" id="port-cost">—</span></div>
+    <div class="port-stat"><span class="port-stat-label">Unrealized gain/loss</span><span class="port-stat-val" id="port-pnl">—</span></div>
+    <div class="port-stat"><span class="port-stat-label">EUR/USD rate used</span><span class="port-stat-val" id="port-fx">—</span></div>
+  </div>
+  <div class="card">
+    <div class="card-title">Passive vs active split</div>
+    <div class="split-bar"><div class="split-etf" id="split-etf-bar" style="width:0%"></div><div class="split-stock" id="split-stock-bar" style="width:0%"></div></div>
+    <div class="split-legend">
+      <span class="split-legend-item"><span class="split-dot" style="background:var(--green)"></span>ETF: <span id="split-etf-pct" style="color:var(--text);font-weight:600;">—</span></span>
+      <span class="split-legend-item"><span class="split-dot" style="background:var(--blue)"></span>Stocks: <span id="split-stock-pct" style="color:var(--text);font-weight:600;">—</span></span>
+    </div>
+  </div>
+  <div class="card">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+      <div class="card-title" style="margin:0;">Positions (<span id="pos-count">0</span>)</div>
+    </div>
+    <div class="pos-filter">
+      <button class="filter-btn active" data-filter="all" onclick="setFilter('all')">All</button>
+      <button class="filter-btn" data-filter="ETF" onclick="setFilter('ETF')">ETF</button>
+      <button class="filter-btn" data-filter="Stock" onclick="setFilter('Stock')">Stocks</button>
+      <button class="filter-btn" data-filter="gain" onclick="setFilter('gain')">Gaining</button>
+      <button class="filter-btn" data-filter="loss" onclick="setFilter('loss')">Losing</button>
+    </div>
+    <div id="pos-list"></div>
+  </div>
+  <p class="api-note">Tap any position to update its current price.</p>
+</div>
+
+<!-- TRADES TAB -->
+<div id="screen-trades" class="screen">
+  <div class="screen-header"><div class="screen-title">Trades</div><div class="screen-sub">Sync your IBKR portfolio</div></div>
+  <div class="info-banner">
+    <strong>How it works:</strong><br><br>
+    Upload your IBKR Activity Statement once a month. The app reads your <strong>complete current portfolio</strong> from the file and replaces what it has stored. Sales disappear automatically. Buys appear automatically. No need to log individual trades.<br><br>
+    <strong>Recommended report parameters:</strong><br>
+    1/ Login to IBKR portal<br>
+    2/ Performance &amp; Reports → Statements<br>
+    3/ Type: <strong>Activity</strong><br>
+    4/ Period: <strong>Year to Date</strong><br>
+    5/ Format: <strong>CSV</strong> (must contain "Open Positions" section - default)<br>
+    6/ Download and upload below
+  </div>
+  <div class="card">
+    <div class="card-title">Last sync</div>
+    <div id="trades-last" style="font-size:14px;color:var(--text);margin-bottom:14px;">—</div>
+    <button class="btn btn-primary" onclick="document.getElementById('csv-import-trades').click()">Upload IBKR CSV</button>
+    <input type="file" id="csv-import-trades" class="csv-upload" accept=".csv" onchange="importCSV(event)">
+  </div>
+  <div class="card">
+    <div class="card-title">Manual position add</div>
+    <p style="font-size:12px;color:var(--text2);margin-bottom:12px;">Adds a single position. Use only if you cannot generate a CSV.</p>
+    <div class="row">
+      <div><label>Symbol</label><input id="add-sym" type="text" placeholder="VWCE" style="text-transform:uppercase;"></div>
+      <div><label>Quantity</label><input id="add-qty" type="number" inputmode="decimal" placeholder="10"></div>
+    </div>
+    <div class="row">
+      <div><label>Avg cost / share</label><input id="add-cost" type="number" inputmode="decimal" placeholder="140.00"></div>
+      <div><label>Current price</label><input id="add-current" type="number" inputmode="decimal" placeholder="158.00"></div>
+    </div>
+    <div class="row">
+      <div><label>Currency</label><select id="add-cur"><option>USD</option><option>EUR</option><option>GBP</option></select></div>
+      <div><label>Type</label><select id="add-type"><option>ETF</option><option>Stock</option></select></div>
+    </div>
+    <button class="btn btn-secondary" onclick="addPositionManual()">Add position</button>
+  </div>
+</div>
+
+<!-- WEALTH TAB -->
+<div id="screen-wealth" class="screen">
+  <div class="screen-header"><div class="screen-title">Wealth</div><div class="screen-sub">All assets. One view.</div></div>
+  <div class="card">
+    <div class="card-title">Net worth (your share)</div>
+    <div class="nw-total private-mask" id="nw-total">€0</div>
+    <div class="divider"></div>
+    <div id="asset-list"><div class="empty">Add your assets below</div></div>
+  </div>
+  <div class="card">
+    <div class="card-title">Bank cash</div>
+    <div id="cash-list"></div>
+    <button class="btn-sm" onclick="addCashAccount()" style="margin-top:8px;width:100%;padding:10px;">+ Add account</button>
+    <div class="cash-total"><span>Total in EUR</span><span class="cash-total-val" id="cash-total-eur">€0</span></div>
+  </div>
+  <div class="card">
+    <div class="card-title">Dubai flat</div>
+    <div class="row">
+      <div><label>Purchase price (AED)</label><input id="flat-purchase" type="number" inputmode="decimal" placeholder="e.g. 1440000"></div>
+      <div><label>Handover date</label><input id="flat-date" type="date"></div>
+    </div>
+    <div class="row">
+      <div><label>Annual appreciation %</label><input id="flat-appreciation" type="number" inputmode="decimal" placeholder="4" step="0.5"></div>
+      <div><label>Your ownership %</label><input id="flat-ownership" type="number" inputmode="decimal" placeholder="50" step="1" min="0" max="100"></div>
+    </div>
+    <button class="btn btn-secondary" onclick="updateFlat()">Save flat details</button>
+    <div id="flat-summary" style="margin-top:14px;display:none;">
+      <div class="divider"></div>
+      <div class="flat-stat"><span class="flat-stat-label">Years owned</span><span class="flat-stat-val" id="flat-years-owned">—</span></div>
+      <div class="flat-stat"><span class="flat-stat-label">Estimated current value (AED)</span><span class="flat-stat-val" id="flat-aed-value">—</span></div>
+      <div class="flat-stat"><span class="flat-stat-label">Estimated current value (EUR)</span><span class="flat-stat-val" id="flat-eur-value">—</span></div>
+      <div class="flat-stat"><span class="flat-stat-label">Your share (EUR)</span><span class="flat-stat-val green" id="flat-your-share">—</span></div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title">Other assets</div>
+    <div class="row">
+      <div><label>IBKR portfolio (€)</label><input id="in-broker" type="number" inputmode="decimal" placeholder="Auto from Portfolio"></div>
+      <div></div>
+    </div>
+    <button class="btn btn-primary" onclick="updateWealth()">Save snapshot</button>
+  </div>
+  <div class="card">
+    <div class="card-title">Crypto (live prices)</div>
+    <div id="crypto-summary" style="margin-bottom:14px;">
+      <div class="port-current-label">Total crypto value</div>
+      <div class="port-current-val" id="crypto-total">—</div>
+      <div style="font-size:12px;color:var(--text2);margin-top:6px;" id="crypto-updated">Loading prices...</div>
+    </div>
+    <div class="divider"></div>
+    <div id="crypto-exchanges"></div>
+    <button class="btn-sm" onclick="refreshCryptoPrices()" style="width:100%;padding:10px;margin-top:8px;">Refresh prices</button>
+    <button class="btn-sm" onclick="toggleEditCrypto()" style="width:100%;padding:10px;margin-top:6px;">Edit holdings</button>
+    <button class="btn-sm" onclick="toggleManualCrypto()" style="width:100%;padding:10px;margin-top:6px;">Enter prices manually (fallback)</button>
+    <div id="edit-crypto" style="display:none;margin-top:12px;padding:12px;background:var(--bg3);border-radius:var(--radius-sm);">
+      <p style="font-size:11px;color:var(--text2);margin-bottom:10px;">Update quantities or add/remove coins per exchange.</p>
+      <div id="edit-crypto-list"></div>
+      <button class="btn-sm" onclick="addCryptoExchange()" style="width:100%;padding:10px;margin-top:8px;">+ Add exchange</button>
+    </div>
+    <div id="manual-crypto" style="display:none;margin-top:12px;padding:12px;background:var(--bg3);border-radius:var(--radius-sm);">
+      <p style="font-size:11px;color:var(--text2);margin-bottom:10px;">Enter current USD price per coin. EUR is auto-computed from FX rate.</p>
+      <div id="manual-crypto-inputs"></div>
+      <button class="btn-sm" onclick="saveManualPrices()" style="width:100%;padding:10px;margin-top:8px;background:var(--green);color:#000;border-color:var(--green);">Save manual prices</button>
+    </div>
+    <p class="api-note" style="margin-top:8px;">Tries CoinGecko → Binance → CryptoCompare · auto-refreshes daily</p>
+  </div>
+  <div class="card">
+    <div class="card-title">IBKR projection (7% annualized + €1,000/mo)</div>
+    <div class="empty" id="proj-placeholder">Add IBKR value to see projections</div>
+    <div id="proj-rows"></div>
+  </div>
+</div>
+
+<!-- FREEDOM TAB -->
+<div id="screen-freedom" class="screen">
+  <div class="screen-header"><div class="screen-title">Freedom</div><div class="screen-sub">When can you stop working?</div></div>
+  <div class="card"><div class="retire-hero"><div class="retire-year" id="ret-year">—</div><div class="retire-age" id="ret-age-result"></div><div class="retire-target" id="ret-target"></div></div></div>
+
+  <!-- Assumptions -->
+  <div class="card">
+    <div class="card-title">Assumptions</div>
+    <div class="slider-block">
+      <div class="slider-header"><span class="slider-label">Retirement income target (€/mo, today's money)</span><input class="slider-input" id="sl-income-val" type="number" inputmode="decimal" value="5000" oninput="syncSlider('sl-income','sl-income-val');updateFreedom()"></div>
+      <input type="range" min="1000" max="20000" step="500" value="5000" id="sl-income" oninput="syncInput('sl-income','sl-income-val');updateFreedom()">
+    </div>
+    <div class="slider-block">
+      <div class="slider-header"><span class="slider-label">Your age today</span><input class="slider-input" id="sl-age-val" type="number" inputmode="numeric" value="33" oninput="syncSlider('sl-age','sl-age-val');updateFreedom()"></div>
+      <input type="range" min="20" max="65" step="1" value="33" id="sl-age" oninput="syncInput('sl-age','sl-age-val');updateFreedom()">
+    </div>
+    <div class="slider-block">
+      <div class="slider-header"><span class="slider-label">Current IBKR portfolio (€)</span><input class="slider-input" id="sl-assets-val" type="number" inputmode="decimal" value="86158" oninput="syncSlider('sl-assets','sl-assets-val');updateFreedom()"></div>
+      <input type="range" min="0" max="2000000" step="1000" value="86158" id="sl-assets" oninput="syncInput('sl-assets','sl-assets-val');updateFreedom()">
+    </div>
+    <div class="slider-block">
+      <div class="slider-header"><span class="slider-label">Expected return (%, nominal)</span><input class="slider-input" id="sl-rate-val" type="number" inputmode="decimal" value="7" step="0.5" oninput="syncSlider('sl-rate','sl-rate-val');updateFreedom()"></div>
+      <input type="range" min="1" max="15" step="0.5" value="7" id="sl-rate" oninput="syncInput('sl-rate','sl-rate-val');updateFreedom()">
+    </div>
+    <!-- Inflation as iOS-style toggle -->
+    <div class="toggle-line">
+      <div>
+        <div class="toggle-title">Account for inflation</div>
+        <div class="toggle-sub">Keeps target in today's purchasing power.</div>
+      </div>
+      <label class="switch"><input type="checkbox" id="sl-infl-on" onchange="updateFreedom()"><span class="switch-slider"></span></label>
+    </div>
+    <div class="slider-block" id="infl-block" style="display:none;">
+      <div class="slider-header"><span class="slider-label">Annual inflation (%)</span><input class="slider-input" id="sl-infl-val" type="number" inputmode="decimal" value="2.8" step="0.1" oninput="syncSlider('sl-infl','sl-infl-val');updateFreedom()"></div>
+      <input type="range" min="0" max="6" step="0.1" value="2.8" id="sl-infl" oninput="syncInput('sl-infl','sl-infl-val');updateFreedom()">
+    </div>
+  </div>
+
+  <!-- SIMPLE MODE: just monthly investment -->
+  <div class="card" id="simple-mode-card">
+    <div class="card-title">Investment plan</div>
+    <div class="slider-block">
+      <div class="slider-header"><span class="slider-label">Monthly investment (€)</span><input class="slider-input" id="simple-invest-val" type="number" inputmode="decimal" value="1000" oninput="syncSlider('simple-invest','simple-invest-val');updateFreedom()"></div>
+      <input type="range" min="0" max="15000" step="100" value="1000" id="simple-invest" oninput="syncInput('simple-invest','simple-invest-val');updateFreedom()">
+    </div>
+    <!-- Multi-country toggle -->
+    <div class="toggle-line" style="margin-top:14px;">
+      <div>
+        <div class="toggle-title">Multi-country plan</div>
+        <div class="toggle-sub">Different investment amount per country/period.</div>
+      </div>
+      <label class="switch"><input type="checkbox" id="multi-on" onchange="toggleMultiCountry()"><span class="switch-slider"></span></label>
+    </div>
+  </div>
+
+  <!-- MULTI-COUNTRY MODE: phases list -->
+  <div class="card" id="multi-mode-card" style="display:none;">
+    <div class="card-title">Phases</div>
+    <p class="api-note" style="margin-bottom:14px;">Add a row for each country/period. Phases auto-sort by start year. Last phase can run until retirement.</p>
+    <div id="phases-list"></div>
+    <button class="btn btn-secondary" style="width:100%;margin-top:10px;" onclick="addPhase()">+ Add country phase</button>
+  </div>
+
+  <!-- Projection -->
+  <div class="card">
+    <div class="card-title" id="proj-title">Full trajectory</div>
+    <div id="freedom-proj"></div>
+  </div>
+</div>
+
+
+<!-- PARTNER TAB -->
+<div id="screen-partner" class="screen">
+  <div class="screen-header"><div class="screen-title">Partner</div><div class="screen-sub">Joint household independence</div></div>
+  <div class="card"><div class="retire-hero"><div class="retire-year" id="joint-ret-year">—</div><div class="retire-age" id="joint-ret-age"></div><div class="retire-target" id="joint-ret-target"></div></div></div>
+
+  <!-- Partner portfolio upload -->
+  <div class="card">
+    <div class="card-title">Partner portfolio</div>
+    <div class="proj-row" style="margin-bottom:12px;"><div style="color:var(--text2);font-size:13px;">Partner invested assets (IBKR)</div><div class="proj-val" id="partner-value">No CSV uploaded yet</div></div>
+    <input type="file" id="partner-csv" class="csv-upload" accept=".csv" onchange="importPartnerCSV(event)">
+    <label for="partner-csv" class="btn btn-secondary" style="width:100%;display:block;text-align:center;cursor:pointer;">Upload partner IBKR statement (CSV)</label>
+    <p class="api-note" style="margin-top:8px;">Partner shares their IBKR Activity Statement CSV (WhatsApp / AirDrop). Upload it here. Re-upload whenever they send a fresh one. You cannot edit their data; this is a read-only snapshot.</p>
+  </div>
+
+  <!-- Joint assumptions -->
+  <div class="card">
+    <div class="card-title">Joint plan</div>
+    <div class="slider-block">
+      <div class="slider-header"><span class="slider-label">Your monthly investment (€)</span><input class="slider-input" id="joint-self-invest-val" type="number" inputmode="decimal" value="1000" oninput="syncSlider('joint-self-invest','joint-self-invest-val');updateJoint()"></div>
+      <input type="range" min="0" max="15000" step="100" value="1000" id="joint-self-invest" oninput="syncInput('joint-self-invest','joint-self-invest-val');updateJoint()">
+    </div>
+    <div class="slider-block">
+      <div class="slider-header"><span class="slider-label">Partner monthly investment (€)</span><input class="slider-input" id="partner-invest-val" type="number" inputmode="decimal" value="1000" oninput="syncSlider('partner-invest','partner-invest-val');updateJoint()"></div>
+      <input type="range" min="0" max="15000" step="100" value="1000" id="partner-invest" oninput="syncInput('partner-invest','partner-invest-val');updateJoint()">
+    </div>
+    <div class="slider-block">
+      <div class="slider-header"><span class="slider-label">Household income target (€/mo, today's money)</span><input class="slider-input" id="joint-income-val" type="number" inputmode="decimal" value="10000" oninput="syncSlider('joint-income','joint-income-val');updateJoint()"></div>
+      <input type="range" min="2000" max="40000" step="500" value="10000" id="joint-income" oninput="syncInput('joint-income','joint-income-val');updateJoint()">
+    </div>
+  </div>
+
+  <!-- Combined breakdown -->
+  <div class="card">
+    <div class="card-title">Combined starting capital</div>
+    <div class="proj-row"><div style="color:var(--text2);font-size:13px;">Your IBKR portfolio</div><div class="proj-val" id="joint-self-assets">—</div></div>
+    <div class="proj-row"><div style="color:var(--text2);font-size:13px;">Partner IBKR portfolio</div><div class="proj-val" id="joint-partner-assets">—</div></div>
+    <div class="proj-row" style="border-top:1px solid var(--green);padding-top:10px;margin-top:4px;"><div style="color:var(--green);font-weight:600;font-size:13px;">Combined invested</div><div class="proj-val green" id="joint-combined-assets">—</div></div>
+  </div>
+
+  <!-- Joint trajectory -->
+  <div class="card">
+    <div class="card-title">Joint trajectory</div>
+    <p class="api-note" style="margin-bottom:12px;">Uses the same return and inflation assumptions you set in the Freedom tab.</p>
+    <div id="joint-proj"></div>
+  </div>
+</div>
+
+<!-- MORE TAB -->
+<div id="screen-settings" class="screen">
+  <div class="screen-header"><div class="screen-title">More</div><div class="screen-sub">Settings &amp; data</div></div>
+  <div class="card">
+    <div class="card-title">Live exchange rates</div>
+    <div class="fx-row"><span class="fx-pair">EUR / USD</span><span class="fx-rate" id="fx-display-usd">—</span></div>
+    <div class="fx-row"><span class="fx-pair">EUR / GBP</span><span class="fx-rate" id="fx-display-gbp">—</span></div>
+    <div class="fx-row"><span class="fx-pair">EUR / AED</span><span class="fx-rate" id="fx-display-aed">—</span></div>
+    <div class="fx-status" id="fx-status">Loading...</div>
+    <button class="btn-sm" onclick="fetchLiveFX()" style="margin-top:10px;width:100%;padding:10px;">Refresh rates</button>
+  </div>
+  <div class="card">
+    <div class="card-title">Claude API key</div>
+    <label>Enables AI insights in Overview</label>
+    <input id="api-key-input" type="password" placeholder="sk-ant-...">
+    <button class="btn btn-primary" onclick="saveApiKey()">Save key</button>
+    <p class="api-note" style="margin-top:8px;">Stored locally only.</p>
+  </div>
+  <div class="card">
+    <div class="card-title">Security</div>
+    <button class="btn btn-secondary" style="margin-bottom:10px;" onclick="lockNow()">🔒 Lock now</button>
+    <button class="btn btn-secondary" style="margin-bottom:10px;" onclick="changePin()">Change PIN</button>
+    <button class="btn btn-secondary" style="color:var(--amber);" onclick="regenerateRecovery()">Regenerate recovery code</button>
+    <p class="api-note" style="margin-top:8px;">App auto-locks after 60 seconds away in background.<br>Face ID is not supported in iOS PWAs - PIN only.</p>
+  </div>
+  <div class="card">
+    <div class="card-title">Display currency</div>
+    <select id="currency-select" onchange="saveCurrency()"><option value="EUR" selected>EUR (€)</option><option value="AED">AED (د.إ)</option></select>
+  </div>
+  <div class="card">
+    <div class="card-title">Data</div>
+    <button class="btn btn-secondary" style="margin-bottom:10px;" onclick="exportData()">Export all data (JSON)</button>
+    <button class="btn btn-secondary" style="margin-bottom:10px;" onclick="resetTransactionsOnly()">Reload transactions from seed (keeps bank/flat/crypto)</button>
+    <button class="btn btn-secondary" style="margin-bottom:10px;" onclick="resetPositions()">Reset portfolio to IBKR May 8 snapshot</button>
+    <button class="btn btn-secondary" style="color:var(--red);" onclick="clearData()">Clear ALL data (destructive)</button>
+  </div>
+</div>
+
+<nav class="nav">
+  <button class="nav-btn active" onclick="showScreen('log',this)"><span class="nav-icon">✚</span><span class="nav-label">Log</span></button>
+  <button class="nav-btn" onclick="showScreen('overview',this)"><span class="nav-icon">◎</span><span class="nav-label">Overview</span></button>
+  <button class="nav-btn" onclick="showScreen('portfolio',this)"><span class="nav-icon">◈</span><span class="nav-label">Portfolio</span></button>
+  <button class="nav-btn" onclick="showScreen('trades',this)"><span class="nav-icon">↑</span><span class="nav-label">Trades</span></button>
+  <button class="nav-btn" onclick="showScreen('wealth',this)"><span class="nav-icon">◇</span><span class="nav-label">Wealth</span></button>
+  <button class="nav-btn" onclick="showScreen('freedom',this)"><span class="nav-icon">*</span><span class="nav-label">Freedom</span></button>
+  <button class="nav-btn" onclick="showScreen('partner',this)"><span class="nav-icon">⧉</span><span class="nav-label">Partner</span></button>
+  <button class="nav-btn" onclick="showScreen('settings',this)"><span class="nav-icon">⚙</span><span class="nav-label">More</span></button>
+</nav>
+
+</div>
+<button class="private-toggle" id="private-toggle" onclick="togglePrivate()" title="Toggle private mode">👁</button>
+<div class="success-flash" id="flash">Saved</div>
+
+<!-- Edit Transaction Modal -->
+<div id="edit-tx-overlay" class="modal-overlay" onclick="if(event.target===this)closeEditTx()">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">Edit entry</div>
+      <button class="modal-close" onclick="closeEditTx()">×</button>
+    </div>
+    <div class="toggle-row">
+      <button class="toggle-btn expense" id="edit-tx-expense-btn" onclick="setEditType('expense')">Expense</button>
+      <button class="toggle-btn income" id="edit-tx-income-btn" onclick="setEditType('income')">Income</button>
+    </div>
+    <label>Amount</label>
+    <div class="amount-row">
+      <input id="edit-tx-amount" type="number" inputmode="decimal" placeholder="0.00">
+      <select id="edit-tx-cur"><option value="EUR">EUR</option><option value="AED">AED</option></select>
+    </div>
+    <label>Description</label>
+    <input id="edit-tx-desc" type="text" placeholder="Optional">
+    <div class="row">
+      <div>
+        <label>Category</label>
+        <select id="edit-tx-cat">
+          <optgroup label="Essentials"><option>Housing</option><option>Utilities</option><option>Telecom</option><option>Groceries</option><option>Transport</option><option>Health</option><option>Pet</option><option>Baby</option></optgroup>
+          <optgroup label="Lifestyle"><option>Dining Out</option><option>Travel</option><option>Entertainment</option><option>Shopping</option><option>Personal Care</option></optgroup>
+          <optgroup label="Financial"><option>IBKR</option><option>Sobha</option><option>Crypto</option><option>Savings</option></optgroup>
+          <optgroup label="Income"><option>Salary</option><option>Bonus</option><option>Side income</option><option>Refund</option></optgroup>
+          <optgroup label="One-offs"><option>Gift</option><option>Education</option><option>Other</option></optgroup>
+        </select>
+      </div>
+      <div><label>Date</label><input id="edit-tx-date" type="date"></div>
+    </div>
+    <div class="amort-row" style="margin-top:10px;">
+      <input type="checkbox" id="edit-amort-check" onchange="document.getElementById('edit-amort-extra').classList.toggle('visible',this.checked)">
+      <label for="edit-amort-check" style="margin:0;cursor:pointer;">Spread over multiple months</label>
+    </div>
+    <div id="edit-amort-extra" class="amort-extra">
+      <label>Number of months</label>
+      <input id="edit-amort-months" type="number" inputmode="numeric" min="2" max="60" placeholder="e.g. 24">
+    </div>
+    <div style="display:flex;gap:8px;margin-top:16px;">
+      <button class="btn btn-primary" style="flex:1;" onclick="saveEditTx()">Save changes</button>
+      <button class="btn btn-secondary" style="flex:1;color:var(--red);" onclick="deleteEditTx()">Delete</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── State ──────────────────────────────────────────────────────────
+let txType='expense';
+// Private mode: hides all monetary values until toggled off. Persisted across sessions.
+let privateMode=localStorage.getItem('fos_private')==='1';
+
+// ── Security: PIN + Face ID lock ──────────────────────────────────
+// PIN is stored as SHA-256 hash with a per-install salt, never in cleartext.
+// Recovery code is shown once at setup, also stored as hash.
+let pinAttempts=parseInt(localStorage.getItem('fos_pin_attempts')||'0');
+let lockoutUntil=parseInt(localStorage.getItem('fos_lockout_until')||'0');
+let setupPin='';
+let entryPin='';
+let pendingRecoveryCode=''; // shown during setup
+
+async function sha256(text){
+  const buf=new TextEncoder().encode(text);
+  const hash=await crypto.subtle.digest('SHA-256',buf);
+  return Array.from(new Uint8Array(hash)).map(b=>b.toString(16).padStart(2,'0')).join('');
+}
+
+function getOrCreateSalt(){
+  let salt=localStorage.getItem('fos_salt');
+  if(!salt){
+    const arr=new Uint8Array(16);
+    crypto.getRandomValues(arr);
+    salt=Array.from(arr).map(b=>b.toString(16).padStart(2,'0')).join('');
+    localStorage.setItem('fos_salt',salt);
+  }
+  return salt;
+}
+
+function generateRecoveryCode(){
+  // 16 chars from unambiguous alphabet (no O/0/I/1)
+  const alphabet='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  const arr=new Uint8Array(16);
+  crypto.getRandomValues(arr);
+  let code='';
+  for(let i=0;i<16;i++)code+=alphabet[arr[i]%alphabet.length];
+  // Format as XXXX-XXXX-XXXX-XXXX for readability
+  return code.match(/.{4}/g).join('-');
+}
+
+function normalizeRecoveryCode(code){
+  return (code||'').toUpperCase().replace(/[^A-Z0-9]/g,'');
+}
+
+function pinIsSet(){
+  return !!localStorage.getItem('fos_pin_hash');
+}
+
+function showLockUI(which){
+  document.getElementById('lock-screen').classList.remove('visible');
+  document.getElementById('setup-screen').classList.remove('visible');
+  document.getElementById('recovery-display-screen').classList.remove('visible');
+  document.getElementById('recovery-entry-screen').classList.remove('visible');
+  document.body.style.overflow=which?'hidden':'';
+  if(which)document.getElementById(which).classList.add('visible');
+}
+
+function setupKey(d){
+  if(setupPin.length>=4)return;
+  hapticTap();
+  setupPin+=d;
+  paintDots('setup-pin-dots',setupPin.length);
+  if(setupPin.length===4){
+    // First time: confirm
+    if(!window._firstPin){
+      window._firstPin=setupPin;
+      setupPin='';
+      paintDots('setup-pin-dots',0);
+      document.getElementById('setup-sub').textContent='Enter the PIN again to confirm.';
+      document.getElementById('setup-error').textContent='';
+    } else {
+      if(setupPin===window._firstPin){
+        completeSetup(setupPin);
+      } else {
+        document.getElementById('setup-error').textContent='PINs do not match. Try again.';
+        flashError('setup-pin-dots');
+        setTimeout(()=>{
+          window._firstPin='';
+          setupPin='';
+          paintDots('setup-pin-dots',0);
+          document.getElementById('setup-sub').textContent='Choose a 4-digit PIN to protect your data.';
+          document.getElementById('setup-error').textContent='';
+        },800);
+      }
+    }
+  }
+}
+
+function setupDelete(){
+  if(setupPin.length>0){
+    setupPin=setupPin.slice(0,-1);
+    paintDots('setup-pin-dots',setupPin.length);
+  }
+}
+
+async function completeSetup(pin){
+  const salt=getOrCreateSalt();
+  const hash=await sha256(salt+pin);
+  localStorage.setItem('fos_pin_hash',hash);
+  // Reset firstPin marker for next change
+  window._firstPin='';
+  setupPin='';
+  // If changing PIN, skip recovery display (recovery code already saved)
+  if(window._skipRecoveryDisplay){
+    window._skipRecoveryDisplay=false;
+    showLockUI(null);
+    flash('PIN changed');
+    return;
+  }
+  // First-time setup: generate recovery code
+  pendingRecoveryCode=generateRecoveryCode();
+  const recHash=await sha256(salt+normalizeRecoveryCode(pendingRecoveryCode));
+  localStorage.setItem('fos_recovery_hash',recHash);
+  document.getElementById('recovery-code-display').textContent=pendingRecoveryCode;
+  showLockUI('recovery-display-screen');
+}
+
+function confirmRecoverySaved(){
+  pendingRecoveryCode='';
+  document.getElementById('recovery-code-display').textContent='';
+  // Unlock the app
+  unlock();
+}
+
+function paintDots(containerId,filled){
+  const dots=document.querySelectorAll('#'+containerId+' .pin-dot');
+  dots.forEach((d,i)=>{
+    d.classList.remove('error');
+    d.classList.toggle('filled',i<filled);
+  });
+}
+
+function flashError(containerId){
+  document.querySelectorAll('#'+containerId+' .pin-dot').forEach(d=>d.classList.add('error'));
+}
+
+function hapticTap(){
+  // Light haptic feedback on iOS - works in PWA via Web Vibration API where supported
+  if(navigator.vibrate)navigator.vibrate(10);
+}
+
+function pinKey(d){
+  if(isLockedOut())return;
+  if(entryPin.length>=4)return;
+  hapticTap();
+  entryPin+=d;
+  paintDots('pin-dots',entryPin.length);
+  if(entryPin.length===4)tryUnlock();
+}
+
+function pinDelete(){
+  if(entryPin.length>0){
+    hapticTap();
+    entryPin=entryPin.slice(0,-1);
+    paintDots('pin-dots',entryPin.length);
+  }
+}
+
+function isLockedOut(){
+  if(lockoutUntil&&Date.now()<lockoutUntil){
+    const mins=Math.ceil((lockoutUntil-Date.now())/60000);
+    document.getElementById('pin-error').textContent='Locked. Try again in '+mins+' min.';
+    return true;
+  }
+  return false;
+}
+
+async function tryUnlock(){
+  const salt=getOrCreateSalt();
+  const hash=await sha256(salt+entryPin);
+  const stored=localStorage.getItem('fos_pin_hash');
+  if(hash===stored){
+    pinAttempts=0;
+    localStorage.setItem('fos_pin_attempts','0');
+    document.getElementById('pin-error').textContent='';
+    entryPin='';
+    paintDots('pin-dots',0);
+    unlock();
+  } else {
+    pinAttempts++;
+    localStorage.setItem('fos_pin_attempts',pinAttempts);
+    flashError('pin-dots');
+    entryPin='';
+    setTimeout(()=>paintDots('pin-dots',0),500);
+    if(pinAttempts>=5){
+      lockoutUntil=Date.now()+5*60*1000; // 5 min lockout
+      localStorage.setItem('fos_lockout_until',lockoutUntil);
+      pinAttempts=0;
+      localStorage.setItem('fos_pin_attempts','0');
+      document.getElementById('pin-error').textContent='Too many attempts. Locked for 5 minutes.';
+    } else {
+      document.getElementById('pin-error').textContent='Wrong PIN. '+(5-pinAttempts)+' attempts left.';
+    }
+  }
+}
+
+function showRecoveryEntry(){
+  document.getElementById('recovery-input').value='';
+  document.getElementById('recovery-error').textContent='';
+  showLockUI('recovery-entry-screen');
+}
+
+function backToLock(){
+  entryPin='';
+  paintDots('pin-dots',0);
+  document.getElementById('pin-error').textContent='';
+  showLockUI('lock-screen');
+}
+
+async function verifyRecovery(){
+  const input=document.getElementById('recovery-input').value;
+  const normalized=normalizeRecoveryCode(input);
+  if(normalized.length!==16){
+    document.getElementById('recovery-error').textContent='Recovery code must be 16 characters.';
+    return;
+  }
+  const salt=getOrCreateSalt();
+  const hash=await sha256(salt+normalized);
+  const stored=localStorage.getItem('fos_recovery_hash');
+  if(hash===stored){
+    // Valid - clear PIN so setup runs again
+    localStorage.removeItem('fos_pin_hash');
+    localStorage.removeItem('fos_pin_attempts');
+    localStorage.removeItem('fos_lockout_until');
+    pinAttempts=0;
+    lockoutUntil=0;
+    window._firstPin='';
+    setupPin='';
+    paintDots('setup-pin-dots',0);
+    document.getElementById('setup-sub').textContent='Choose a new 4-digit PIN.';
+    document.getElementById('setup-error').textContent='';
+    showLockUI('setup-screen');
+  } else {
+    document.getElementById('recovery-error').textContent='Invalid recovery code.';
+  }
+}
+
+function unlock(){
+  showLockUI(null);
+}
+
+function lockNow(){
+  if(!pinIsSet())return;
+  entryPin='';
+  paintDots('pin-dots',0);
+  document.getElementById('pin-error').textContent='';
+  showLockUI('lock-screen');
+}
+
+// ── Face ID removed: iOS PWA limitation ───────────────────────────
+// WebAuthn doesn't work reliably in PWAs added to iOS home screen.
+// Apple isolates PWA storage from Safari, so credentials don't carry across contexts.
+// PIN is the primary unlock method.
+function faceIDEnrolled(){return false;}
+// Clean up any stale credential ID from prior attempts
+localStorage.removeItem('fos_faceid_credid');
+
+function changePin(){
+  if(!confirm('Change your PIN? You will be asked to set a new 4-digit PIN.'))return;
+  localStorage.removeItem('fos_pin_hash');
+  // Keep recovery code as-is
+  window._firstPin='';
+  setupPin='';
+  paintDots('setup-pin-dots',0);
+  document.getElementById('setup-sub').textContent='Choose a new 4-digit PIN.';
+  document.getElementById('setup-error').textContent='';
+  // Override completeSetup behaviour to skip recovery display this time
+  window._skipRecoveryDisplay=true;
+  showLockUI('setup-screen');
+}
+
+async function regenerateRecovery(){
+  if(!confirm('Generate a new recovery code? The old code will stop working immediately.'))return;
+  pendingRecoveryCode=generateRecoveryCode();
+  const salt=getOrCreateSalt();
+  const hash=await sha256(salt+normalizeRecoveryCode(pendingRecoveryCode));
+  localStorage.setItem('fos_recovery_hash',hash);
+  document.getElementById('recovery-code-display').textContent=pendingRecoveryCode;
+  showLockUI('recovery-display-screen');
+}
+
+function bufferToBase64(buf){
+  // legacy helper - kept harmless for compat
+  const bytes=new Uint8Array(buf);let s='';bytes.forEach(b=>{s+=String.fromCharCode(b);});return btoa(s);
+}
+
+// SEED transactions from Money Manager export May 2026 - Nov 2027
+const SEED_TX=[];
+
+let transactions=JSON.parse(localStorage.getItem('fos_tx')||'null')||SEED_TX;
+let wealth=JSON.parse(localStorage.getItem('fos_wealth')||'{"broker":0,"cryptoLive":0}');
+let flat=JSON.parse(localStorage.getItem('fos_flat')||'null')||{purchaseAED:1440000,handoverDate:'2026-03-24',appreciation:4,ownership:50};
+// Migrate old state that used purchaseYear -> handoverDate
+if(flat.purchaseYear&&!flat.handoverDate){
+  flat.handoverDate=flat.purchaseYear+'-03-24';
+  delete flat.purchaseYear;
+  localStorage.setItem('fos_flat',JSON.stringify(flat));
+}
+let cashAccounts=JSON.parse(localStorage.getItem('fos_cash')||'null')||[
+  {bank:'Revolut',currency:'EUR',amount:57062},
+  {bank:'Revolut',currency:'USD',amount:9499}
+];
+
+// Crypto holdings seeded from screenshots (May 10 2026)
+// Each exchange holds (symbol, quantity) pairs. Live prices fetched from CoinGecko.
+const SEED_CRYPTO={
+  ByBit:[
+    {symbol:'BTC',qty:0.01080434},
+    {symbol:'SOL',qty:1.583415}
+  ]
+};
+let cryptoHoldings=JSON.parse(localStorage.getItem('fos_crypto')||'null')||SEED_CRYPTO;
+// Live prices cache, keyed by symbol -> {usd, eur, change24h}
+let cryptoPrices=JSON.parse(localStorage.getItem('fos_crypto_prices')||'{}');
+let cryptoFetchedAt=localStorage.getItem('fos_crypto_at')||null;
+let currency=localStorage.getItem('fos_currency')||'EUR';
+let posFilter='all';
+let editingPosition=null;
+let viewYear=new Date().getFullYear();
+let viewMonth=new Date().getMonth();
+
+let eurusd=parseFloat(localStorage.getItem('fos_eurusd'))||1.1786;
+let eurgbp=parseFloat(localStorage.getItem('fos_eurgbp'))||0.8703;
+let euraed=parseFloat(localStorage.getItem('fos_euraed'))||4.33;
+let fxFetchedAt=localStorage.getItem('fos_fx_at')||null;
+
+const SEED=[
+  {symbol:"VUSA",qty:176,costPrice:94.9127,costBasis:16704.64,currentPrice:122.1000,currency:"EUR",type:"ETF"},
+  {symbol:"VWCE",qty:56,costPrice:146.8911,costBasis:8225.90,currentPrice:161.6200,currency:"EUR",type:"ETF"},
+  {symbol:"VWRL",qty:10,costPrice:122.6950,costBasis:1226.95,currentPrice:157.3200,currency:"EUR",type:"ETF"},
+  {symbol:"AMZN",qty:13,costPrice:108.7799,costBasis:1414.14,currentPrice:266.3200,currency:"USD",type:"Stock"},
+  {symbol:"ASAN",qty:1,costPrice:17.9477,costBasis:17.95,currentPrice:6.6200,currency:"USD",type:"Stock"},
+  {symbol:"CHIQ",qty:36,costPrice:21.3414,costBasis:768.29,currentPrice:18.5500,currency:"USD",type:"ETF"},
+  {symbol:"CXSE",qty:20,costPrice:39.8648,costBasis:797.30,currentPrice:39.6669,currency:"USD",type:"ETF"},
+  {symbol:"DXJ",qty:9,costPrice:77.9667,costBasis:701.70,currentPrice:169.5900,currency:"USD",type:"ETF"},
+  {symbol:"GOOG",qty:67,costPrice:120.3372,costBasis:8062.59,currentPrice:379.3800,currency:"USD",type:"Stock"},
+  {symbol:"GRAB",qty:38,costPrice:3.8406,costBasis:145.94,currentPrice:3.5100,currency:"USD",type:"Stock"},
+  {symbol:"MSFT",qty:1,costPrice:268.0100,costBasis:268.01,currentPrice:418.5700,currency:"USD",type:"Stock"},
+  {symbol:"QQQ",qty:6,costPrice:291.4779,costBasis:1748.87,currentPrice:717.5400,currency:"USD",type:"ETF"},
+  {symbol:"SBUX",qty:2,costPrice:103.2950,costBasis:206.59,currentPrice:103.1100,currency:"USD",type:"Stock"},
+  {symbol:"UBER",qty:4,costPrice:29.1160,costBasis:116.46,currentPrice:71.8200,currency:"USD",type:"Stock"},
+  {symbol:"VGT",qty:8,costPrice:42.0100,costBasis:336.08,currentPrice:115.7500,currency:"USD",type:"ETF"},
+  {symbol:"VOO",qty:17,costPrice:384.8629,costBasis:6542.67,currentPrice:685.5500,currency:"USD",type:"ETF"},
+  {symbol:"VTI",qty:2,costPrice:206.9900,costBasis:413.98,currentPrice:366.7900,currency:"USD",type:"ETF"},
+  {symbol:"VUSD",qty:3,costPrice:115.8792,costBasis:347.64,currentPrice:142.1425,currency:"USD",type:"ETF"}
+];
+const POS_UPDATED_KEY='fos_pos_updated';
+let positions=JSON.parse(localStorage.getItem('fos_positions')||'null')||SEED;
+let posUpdatedAt=localStorage.getItem(POS_UPDATED_KEY)||'May 22, 2026 (IBKR statement)';
+let posUpdatedTimestamp=parseInt(localStorage.getItem('fos_pos_ts')||'0')||new Date('2026-05-08').getTime();
+
+// Save seed transactions on first load
+if(!localStorage.getItem('fos_tx'))localStorage.setItem('fos_tx',JSON.stringify(transactions));
+
+// ── Helpers ────────────────────────────────────────────────────────
+const S=()=>currency==='AED'?'د.إ':'€';
+const fmt=n=>{
+  const sign=n<0?'-':'';
+  const abs=Math.abs(n);
+  // Smart decimal display:
+  // - Values < 1000 with non-trivial cents: show 2 decimals
+  // - Values >= 1000 (large totals): round to whole numbers for readability
+  // - Whole numbers always show as whole
+  let str;
+  if(abs<1000&&Math.round(abs*100)%100!==0){
+    str=abs.toFixed(2);
+  } else {
+    str=Math.round(abs).toLocaleString();
+  }
+  // Add thousand separators to the integer part if not already present
+  if(!str.includes(',')&&abs>=1000){
+    str=Math.round(abs).toLocaleString();
+  } else if(str.includes('.')&&abs>=1000){
+    const [whole,dec]=str.split('.');
+    str=parseInt(whole).toLocaleString()+'.'+dec;
+  }
+  return S()+sign+str;
+};
+const fmtSigned=n=>{const num=Math.round(n);return(num>=0?'+':'-')+S()+Math.abs(num).toLocaleString();};
+const fmtPct=n=>(n>=0?'+':'')+n.toFixed(1)+'%';
+function toEUR(price,cur){
+  if(cur==='EUR')return price;
+  if(cur==='USD')return price/eurusd;
+  if(cur==='GBP')return price/eurgbp;
+  if(cur==='AED')return price/euraed;
+  return price;
+}
+
+document.getElementById('tx-date').value=new Date().toISOString().split('T')[0];
+const savedKey=localStorage.getItem('fos_apikey');
+if(savedKey)document.getElementById('api-key-input').value=savedKey;
+
+function togglePrivate(){
+  privateMode=!privateMode;
+  localStorage.setItem('fos_private',privateMode?'1':'0');
+  applyPrivateMode();
+}
+
+function applyPrivateMode(){
+  document.body.classList.toggle('private-mode',privateMode);
+  const btn=document.getElementById('private-toggle');
+  if(btn)btn.textContent=privateMode?'👁‍🗨':'👁';
+}
+
+function flash(msg){const el=document.getElementById('flash');el.textContent=msg;el.classList.add('show');setTimeout(()=>el.classList.remove('show'),1800);}
+
+// ── Live FX ────────────────────────────────────────────────────────
+async function fetchLiveFX(){
+  const status=document.getElementById('fx-status');
+  if(status)status.textContent='Fetching rates...';
+  const attempts=[
+    {name:'Frankfurter (ECB)',fn:async()=>{
+      const r=await fetch('https://api.frankfurter.app/latest?from=EUR&to=USD,GBP,AED');
+      if(!r.ok)throw new Error('HTTP '+r.status);
+      const d=await r.json();
+      if(!d.rates)throw new Error('no rates');
+      return {USD:d.rates.USD,GBP:d.rates.GBP,AED:d.rates.AED};
+    }},
+    {name:'exchangerate.host',fn:async()=>{
+      const r=await fetch('https://api.exchangerate.host/latest?base=EUR&symbols=USD,GBP,AED');
+      if(!r.ok)throw new Error('HTTP '+r.status);
+      const d=await r.json();
+      if(!d.rates)throw new Error('no rates');
+      return {USD:d.rates.USD,GBP:d.rates.GBP,AED:d.rates.AED};
+    }},
+    {name:'open.er-api.com',fn:async()=>{
+      const r=await fetch('https://open.er-api.com/v6/latest/EUR');
+      if(!r.ok)throw new Error('HTTP '+r.status);
+      const d=await r.json();
+      if(!d.rates)throw new Error('no rates');
+      return {USD:d.rates.USD,GBP:d.rates.GBP,AED:d.rates.AED};
+    }}
+  ];
+  const errors=[];
+  let rates=null,source=null;
+  for(const a of attempts){
+    try{rates=await a.fn();source=a.name;break;}
+    catch(e){errors.push(a.name+': '+e.message);}
+  }
+  if(!rates){
+    if(status)status.innerHTML='<span style="color:var(--red);">All FX sources failed.</span> Using stored rates.<br><span style="font-size:10px;color:var(--text3);">'+errors.join(' · ')+'</span>';
+    return;
+  }
+  if(rates.USD){eurusd=rates.USD;localStorage.setItem('fos_eurusd',eurusd);}
+  if(rates.GBP){eurgbp=rates.GBP;localStorage.setItem('fos_eurgbp',eurgbp);}
+  if(rates.AED){euraed=rates.AED;localStorage.setItem('fos_euraed',euraed);}
+  fxFetchedAt=new Date().toISOString();
+  localStorage.setItem('fos_fx_at',fxFetchedAt);
+  if(status){
+    const d=new Date(fxFetchedAt);
+    status.innerHTML='Updated '+d.toLocaleString()+' <span style="font-size:10px;color:var(--text3);">· source: '+source+'</span>';
+  }
+  updateFXDisplay();
+  if(document.getElementById('screen-portfolio').classList.contains('active'))renderPortfolio();
+  if(document.getElementById('screen-wealth').classList.contains('active'))renderWealth();
+}
+
+function updateFXDisplay(){
+  const u=document.getElementById('fx-display-usd');
+  const g=document.getElementById('fx-display-gbp');
+  const a=document.getElementById('fx-display-aed');
+  if(u)u.textContent=eurusd.toFixed(4);
+  if(g)g.textContent=eurgbp.toFixed(4);
+  if(a)a.textContent=euraed.toFixed(4);
+  const status=document.getElementById('fx-status');
+  if(status&&fxFetchedAt){
+    const d=new Date(fxFetchedAt);
+    status.textContent='Source: European Central Bank · Updated '+d.toLocaleString();
+  }
+}
+
+// ── Log ────────────────────────────────────────────────────────────
+function setType(t,btn){txType=t;document.querySelectorAll('.toggle-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');}
+function toggleAmort(){document.getElementById('amort-extra').classList.toggle('visible',document.getElementById('amort-check').checked);}
+function logTransaction(){
+  const amount=parseFloat(document.getElementById('tx-amount').value);
+  const txCur=document.getElementById('tx-cur').value;
+  const desc=document.getElementById('tx-desc').value.trim();
+  const cat=document.getElementById('tx-cat').value;
+  const date=document.getElementById('tx-date').value;
+  const amort=document.getElementById('amort-check').checked;
+  const months=parseInt(document.getElementById('amort-months').value)||1;
+  if(!amount||amount<=0){alert('Enter an amount.');return;}
+  const amountEUR=toEUR(amount,txCur);
+  transactions.unshift({
+    id:Date.now(),amount:amountEUR,amountOriginal:amount,currencyOriginal:txCur,
+    desc,cat,type:txType,date,amort:amort&&months>1,months:amort?months:1
+  });
+  localStorage.setItem('fos_tx',JSON.stringify(transactions));
+  document.getElementById('tx-amount').value='';
+  document.getElementById('tx-desc').value='';
+  document.getElementById('amort-check').checked=false;
+  document.getElementById('amort-extra').classList.remove('visible');
+  document.getElementById('tx-date').value=new Date().toISOString().split('T')[0];
+  flash('Entry saved');
+}
+
+// ── Edit existing transactions ─────────────────────────────────────
+let editingTxId=null;
+let editTxType='expense';
+
+function openEditTx(id){
+  const tx=transactions.find(t=>t.id===id);
+  if(!tx)return;
+  editingTxId=id;
+  editTxType=tx.type;
+  // Populate form
+  document.getElementById('edit-tx-amount').value=tx.amountOriginal||tx.amount;
+  document.getElementById('edit-tx-cur').value=tx.currencyOriginal||'EUR';
+  document.getElementById('edit-tx-desc').value=tx.desc||'';
+  document.getElementById('edit-tx-cat').value=tx.cat;
+  document.getElementById('edit-tx-date').value=tx.date;
+  document.getElementById('edit-amort-check').checked=!!tx.amort;
+  document.getElementById('edit-amort-extra').classList.toggle('visible',!!tx.amort);
+  document.getElementById('edit-amort-months').value=tx.amort?tx.months:'';
+  // Set type toggle visual
+  document.getElementById('edit-tx-expense-btn').classList.toggle('active',tx.type==='expense');
+  document.getElementById('edit-tx-income-btn').classList.toggle('active',tx.type==='income');
+  // Show modal
+  document.getElementById('edit-tx-overlay').classList.add('visible');
+}
+
+function closeEditTx(){
+  document.getElementById('edit-tx-overlay').classList.remove('visible');
+  editingTxId=null;
+}
+
+function setEditType(t){
+  editTxType=t;
+  document.getElementById('edit-tx-expense-btn').classList.toggle('active',t==='expense');
+  document.getElementById('edit-tx-income-btn').classList.toggle('active',t==='income');
+}
+
+function saveEditTx(){
+  if(editingTxId===null)return;
+  const idx=transactions.findIndex(t=>t.id===editingTxId);
+  if(idx<0)return;
+  const amount=parseFloat(document.getElementById('edit-tx-amount').value);
+  if(!amount||amount<=0){alert('Enter a valid amount.');return;}
+  const cur=document.getElementById('edit-tx-cur').value;
+  const desc=document.getElementById('edit-tx-desc').value.trim();
+  const cat=document.getElementById('edit-tx-cat').value;
+  const date=document.getElementById('edit-tx-date').value;
+  const amort=document.getElementById('edit-amort-check').checked;
+  const months=parseInt(document.getElementById('edit-amort-months').value)||1;
+  transactions[idx]={
+    ...transactions[idx],
+    amount:toEUR(amount,cur),
+    amountOriginal:amount,
+    currencyOriginal:cur,
+    desc,cat,
+    type:editTxType,
+    date,
+    amort:amort&&months>1,
+    months:amort?months:1
+  };
+  localStorage.setItem('fos_tx',JSON.stringify(transactions));
+  closeEditTx();
+  renderOverview();
+  flash('Entry updated');
+}
+
+function deleteEditTx(){
+  if(editingTxId===null)return;
+  if(!confirm('Delete this entry? This cannot be undone.'))return;
+  transactions=transactions.filter(t=>t.id!==editingTxId);
+  localStorage.setItem('fos_tx',JSON.stringify(transactions));
+  closeEditTx();
+  renderOverview();
+  flash('Entry deleted');
+}
+
+// ── Overview ───────────────────────────────────────────────────────
+function getMonthData(month,year,maxDay){
+  let income=0,spent=0;const cats={};
+  transactions.forEach(tx=>{
+    const d=new Date(tx.date);
+    let eff=tx.amort?tx.amount/tx.months:tx.amount;
+    if(tx.amort){
+      const txM=d.getMonth()+d.getFullYear()*12,curM=month+year*12;
+      if(curM<txM||curM>=txM+tx.months)return;
+      // For amortized: include if within month period (day filter applies only to original posting if equal month)
+      if(maxDay&&curM===txM&&d.getDate()>maxDay)return;
+    } else {
+      if(d.getMonth()!==month||d.getFullYear()!==year)return;
+      if(maxDay&&d.getDate()>maxDay)return;
+    }
+    if(tx.type==='income')income+=eff;else{spent+=eff;cats[tx.cat]=(cats[tx.cat]||0)+eff;}
+  });
+  return{income,spent,cats};
+}
+
+function buildMonthNav(){
+  const today=new Date();
+  const curY=today.getFullYear(),curM=today.getMonth();
+  const yearsSet=new Set();
+  // Show 2026 through 2030 for long-term planning
+  for(let y=2026;y<=2030;y++)yearsSet.add(y);
+  transactions.forEach(tx=>{const d=new Date(tx.date);yearsSet.add(d.getFullYear());});
+  const years=Array.from(yearsSet).sort();
+  document.getElementById('year-tabs').innerHTML=years.map(y=>`<button class="year-tab ${y===viewYear?'active':''}" onclick="setViewYear(${y})">${y}</button>`).join('');
+  const monthNames=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const nav=document.getElementById('month-nav');
+  nav.innerHTML=monthNames.map((m,i)=>{
+    const isFuture=viewYear>curY||(viewYear===curY&&i>curM);
+    const cls='month-chip'+(i===viewMonth?' active':'')+(isFuture?' future':'');
+    return `<button class="${cls}" onclick="setViewMonth(${i})">${m}</button>`;
+  }).join('');
+  setTimeout(()=>{
+    const active=nav.querySelector('.month-chip.active');
+    if(active)active.scrollIntoView({behavior:'instant',block:'nearest',inline:'center'});
+  },10);
+}
+
+function setViewYear(y){viewYear=y;renderOverview();}
+function setViewMonth(m){viewMonth=m;renderOverview();}
+
+function renderOverview(){
+  buildMonthNav();
+  const monthName=new Date(viewYear,viewMonth,1).toLocaleString('default',{month:'long',year:'numeric'});
+  document.getElementById('ov-month-title').textContent=monthName;
+  const{income,spent,cats}=getMonthData(viewMonth,viewYear);
+  // MoM: if viewing the current month, compare same day range (month-to-date vs prev month MTD)
+  const todayDate=new Date();
+  const isCurrentMonth=(viewMonth===todayDate.getMonth()&&viewYear===todayDate.getFullYear());
+  const maxDay=isCurrentMonth?todayDate.getDate():null;
+  let prevM=viewMonth-1,prevY=viewYear;
+  if(prevM<0){prevM=11;prevY--;}
+  const prev=getMonthData(prevM,prevY,maxDay);
+  const net=income-spent,sr=income>0?Math.round((net/income)*100):null;
+  document.getElementById('ov-income').textContent=fmt(income);
+  document.getElementById('ov-spent').textContent=fmt(spent);
+  // MoM helper: returns formatted "+12% vs prev" string with color
+  function momLabel(current,previous,goodWhenUp){
+    if(!previous||previous===0)return '';
+    const pct=((current-previous)/previous)*100;
+    const arrow=pct>=0?'↑':'↓';
+    const sign=pct>=0?'+':'';
+    const isGood=goodWhenUp?pct>=0:pct<=0;
+    const cls=Math.abs(pct)<1?'mom-flat':(isGood?'mom-good':'mom-bad');
+    const suffix=isCurrentMonth?' vs prev MTD':' vs prev';
+    return `<div class="mom ${cls}">${arrow} ${sign}${pct.toFixed(0)}%${suffix}</div>`;
+  }
+  document.getElementById('ov-income-mom').innerHTML=momLabel(income,prev.income,true);
+  document.getElementById('ov-spent-mom').innerHTML=momLabel(spent,prev.spent,false);
+  const netEl=document.getElementById('ov-net');
+  netEl.textContent=(net>=0?'+':'-')+S()+Math.abs(Math.round(net)).toLocaleString();
+  netEl.className='metric-value '+(net>=0?'green':'red');
+  const prevNet=prev.income-prev.spent;
+  document.getElementById('ov-net-mom').innerHTML=momLabel(net,prevNet,true);
+  const srEl=document.getElementById('ov-sr');
+  srEl.textContent=sr!==null?sr+'%':'—';
+  srEl.className='metric-value '+(sr===null?'':sr>=20?'green':sr>=0?'amber':'red');
+  const prevSr=prev.income>0?Math.round(((prev.income-prev.spent)/prev.income)*100):null;
+  document.getElementById('ov-sr-mom').innerHTML=(sr!==null&&prevSr!==null)?`<div class="mom mom-flat">prev ${prevSr}%</div>`:'';
+  const cols=['#1db954','#3b82f6','#f59e0b','#e8453c','#8b5cf6','#ec4899','#14b8a6','#f97316','#06b6d4'];
+  const sorted=Object.entries(cats).sort((a,b)=>b[1]-a[1]);
+  const maxV=sorted.length>0?sorted[0][1]:1;
+  document.getElementById('cat-bars').innerHTML=sorted.map(([cat,val],i)=>
+    `<div class="bar-row"><div class="bar-cat">${cat}</div><div class="bar-track"><div class="bar-fill" style="width:${Math.round((val/maxV)*100)}%;background:${cols[i%cols.length]}"></div></div><div class="bar-amt">${fmt(val)}</div></div>`
+  ).join('')||'<div class="empty">No expenses this month</div>';
+  const monthTx=transactions.filter(tx=>{
+    const d=new Date(tx.date);
+    if(tx.amort){
+      const txM=d.getMonth()+d.getFullYear()*12,curM=viewMonth+viewYear*12;
+      return curM>=txM&&curM<txM+tx.months;
+    }
+    return d.getMonth()===viewMonth&&d.getFullYear()===viewYear;
+  }).sort((a,b)=>{
+    // Newest date first; for same date, income before expense
+    if(a.date!==b.date)return b.date.localeCompare(a.date);
+    if(a.type!==b.type)return a.type==='income'?-1:1;
+    return 0;
+  });
+  // Group transactions by date for Revolut-style daily sections
+  const today=new Date();today.setHours(0,0,0,0);
+  const yesterday=new Date(today);yesterday.setDate(yesterday.getDate()-1);
+  function dayLabel(dateStr){
+    const d=new Date(dateStr);d.setHours(0,0,0,0);
+    const weekday=d.toLocaleDateString('default',{weekday:'long'});
+    const day=d.getDate();
+    const month=d.toLocaleDateString('default',{month:'long'});
+    let suffix='';
+    if(d.getTime()===today.getTime())suffix=' (today)';
+    else if(d.getTime()===yesterday.getTime())suffix=' (yesterday)';
+    return weekday+' '+day+' '+month+suffix;
+  }
+  const groups={};
+  monthTx.forEach(tx=>{
+    const key=tx.date;
+    if(!groups[key])groups[key]={label:dayLabel(tx.date),txs:[],netEUR:0};
+    groups[key].txs.push(tx);
+    const dispAmt=tx.amort?tx.amount/tx.months:tx.amount;
+    groups[key].netEUR+=(tx.type==='income'?1:-1)*dispAmt;
+  });
+  const sortedKeys=Object.keys(groups).sort((a,b)=>b.localeCompare(a));
+  document.getElementById('tx-list').innerHTML=sortedKeys.map(key=>{
+    const g=groups[key];
+    const dayTotal=g.netEUR;
+    const dayTotalClass=dayTotal>=0?'green':'red';
+    const dayTotalStr=(dayTotal>=0?'+':'-')+fmt(Math.abs(dayTotal)).replace(/^[€]/,'€');
+    const rows=g.txs.map(tx=>{
+      const dispAmt=tx.amort?tx.amount/tx.months:tx.amount;
+      const spread=tx.amort?`<span class="pill spread">/${tx.months}mo</span>`:'';
+      const origCur=tx.currencyOriginal&&tx.currencyOriginal!=='EUR'?` <span class="pill" style="font-size:9px;">${tx.currencyOriginal} ${tx.amountOriginal.toFixed(0)}</span>`:'';
+      return`<div class="tx-item" onclick="openEditTx(${tx.id})">
+        <div class="tx-top"><div class="tx-name">${tx.cat}${spread}</div><div class="tx-amount ${tx.type==='income'?'green':'red'}">${tx.type==='income'?'+':'-'}${fmt(dispAmt)}</div></div>
+        ${tx.desc?`<div class="tx-desc">${tx.desc}</div>`:''}
+        ${origCur?`<div style="margin-top:3px"><div class="tx-meta">${origCur}</div></div>`:''}
+      </div>`;
+    }).join('');
+    return`<div class="day-group">
+      <div class="day-header">
+        <div class="day-label">${g.label}</div>
+        <div class="day-total ${dayTotalClass}">${dayTotalStr}</div>
+      </div>
+      <div class="day-txs">${rows}</div>
+    </div>`;
+  }).join('')||'<div class="empty">Nothing logged this month</div>';
+}
+
+// ── Portfolio ──────────────────────────────────────────────────────
+function calcStats(){
+  let totalValue=0,totalCost=0,etfValue=0,stockValue=0;
+  const enriched=positions.map(p=>{
+    const cur=p.currency||'USD';
+    const currentEUR=toEUR(p.currentPrice,cur);
+    const costEUR=toEUR(p.costBasis,cur);
+    const valueEUR=currentEUR*p.qty;
+    const pnlEUR=valueEUR-costEUR;
+    const pnlPct=costEUR>0?(pnlEUR/costEUR)*100:0;
+    totalValue+=valueEUR;totalCost+=costEUR;
+    if(p.type==='ETF')etfValue+=valueEUR;else stockValue+=valueEUR;
+    return{...p,currency:cur,currentEUR,valueEUR,costEUR,pnlEUR,pnlPct};
+  });
+  enriched.forEach(p=>{p.allocationPct=totalValue>0?(p.valueEUR/totalValue)*100:0;});
+  return{enriched,totalValue,totalCost,etfValue,stockValue};
+}
+
+function renderPortfolio(){
+  const{enriched,totalValue,totalCost,etfValue,stockValue}=calcStats();
+  const totalPnl=totalValue-totalCost;
+  const totalPnlPct=totalCost>0?(totalPnl/totalCost)*100:0;
+  const etfPct=totalValue>0?Math.round((etfValue/totalValue)*100):0;
+  const stockPct=100-etfPct;
+  document.getElementById('port-current').textContent=fmt(totalValue);
+  document.getElementById('port-cost').textContent=fmt(totalCost);
+  const pnlEl=document.getElementById('port-pnl');
+  pnlEl.textContent=fmtSigned(totalPnl)+' ('+fmtPct(totalPnlPct)+')';
+  pnlEl.className='port-stat-val '+(totalPnl>=0?'green':'red');
+  const gainEl=document.getElementById('port-gain');
+  gainEl.textContent=fmtSigned(totalPnl)+' ('+fmtPct(totalPnlPct)+') unrealized';
+  gainEl.className='port-gain-line '+(totalPnl>=0?'green':'red');
+  document.getElementById('port-fx').textContent=eurusd.toFixed(4);
+  const ageDays=Math.floor((Date.now()-posUpdatedTimestamp)/86400000);
+  const ageLabel=ageDays===0?'today':ageDays===1?'1 day ago':ageDays+' days ago';
+  document.getElementById('port-updated').textContent='Last update: '+posUpdatedAt+' ('+ageLabel+')';
+  // Stale price warning - graduated by age
+  const banner=document.getElementById('port-stale-banner');
+  if(banner){
+    if(ageDays>=14){
+      banner.style.display='block';
+      banner.style.background='rgba(232,69,60,0.1)';
+      banner.style.borderColor='rgba(232,69,60,0.3)';
+      banner.style.color='var(--red)';
+      banner.innerHTML='<strong>Prices are '+ageDays+' days old.</strong> These figures may be significantly out of date if the market has moved. Upload a fresh IBKR Activity Statement in the Trades tab to refresh all positions.';
+    } else if(ageDays>=7){
+      banner.style.display='block';
+      banner.style.background='rgba(245,158,11,0.1)';
+      banner.style.borderColor='rgba(245,158,11,0.3)';
+      banner.style.color='var(--amber)';
+      banner.innerHTML='<strong>Prices are '+ageDays+' days old.</strong> Consider uploading a fresh IBKR Activity Statement (Trades tab) to refresh.';
+    } else if(ageDays>=2){
+      banner.style.display='block';
+      banner.style.background='rgba(59,130,246,0.08)';
+      banner.style.borderColor='rgba(59,130,246,0.2)';
+      banner.style.color='var(--blue)';
+      banner.innerHTML='Prices are <strong>'+ageDays+' days old</strong>. Tap any position to update its price manually, or upload a fresh IBKR CSV in the Trades tab.';
+    } else {
+      banner.style.display='none';
+    }
+  }
+  document.getElementById('pos-count').textContent=enriched.length;
+  document.getElementById('split-etf-bar').style.width=etfPct+'%';
+  document.getElementById('split-stock-bar').style.width=stockPct+'%';
+  document.getElementById('split-etf-pct').textContent=etfPct+'% · '+fmt(etfValue);
+  document.getElementById('split-stock-pct').textContent=stockPct+'% · '+fmt(stockValue);
+
+  let filtered=[...enriched];
+  if(posFilter==='ETF')filtered=filtered.filter(p=>p.type==='ETF');
+  else if(posFilter==='Stock')filtered=filtered.filter(p=>p.type==='Stock');
+  else if(posFilter==='gain')filtered=filtered.filter(p=>p.pnlEUR>=0);
+  else if(posFilter==='loss')filtered=filtered.filter(p=>p.pnlEUR<0);
+  filtered.sort((a,b)=>b.valueEUR-a.valueEUR);
+
+  if(filtered.length===0){
+    document.getElementById('pos-list').innerHTML='<div class="empty">No positions match this filter</div>';
+  } else {
+    document.getElementById('pos-list').innerHTML=filtered.map(p=>{
+      const c=p.pnlEUR>=0?'green':'red';
+      const curSym=p.currency==='USD'?'$':p.currency==='GBP'?'£':'€';
+      const isEditing=editingPosition===p.symbol;
+      return`<div class="pos-item">
+        <div class="pos-clickable" onclick="toggleEdit('${p.symbol}')">
+          <div class="pos-top"><div><span class="pos-sym">${p.symbol}</span><span class="pill ${p.type==='ETF'?'etf':'stock'}">${p.type}</span></div><div class="pos-val">${fmt(p.valueEUR)}</div></div>
+          <div class="pos-bot"><div class="pos-detail">${p.qty} × ${curSym}${p.currentPrice.toFixed(2)} · cost ${fmt(p.costEUR)}</div><div class="pos-pnl ${c}">${fmtSigned(p.pnlEUR)} (${fmtPct(p.pnlPct)})</div></div>
+          <div class="pos-allocation">${p.allocationPct.toFixed(1)}% of portfolio</div>
+        </div>
+        <div class="pos-edit ${isEditing?'visible':''}">
+          <div class="pos-edit-row"><div><label>Update price (${p.currency})</label><input type="number" id="edit-price-${p.symbol}" step="0.01" placeholder="${p.currentPrice.toFixed(2)}" value="${p.currentPrice}"></div><div><label>Type</label><select id="edit-type-${p.symbol}"><option value="Stock" ${p.type==='Stock'?'selected':''}>Stock</option><option value="ETF" ${p.type==='ETF'?'selected':''}>ETF</option></select></div><button class="pos-edit-btn" onclick="event.stopPropagation();updatePosition('${p.symbol}')">Save</button></div>
+        </div>
+      </div>`;
+    }).join('');
+  }
+
+  wealth.broker=Math.round(totalValue);
+  localStorage.setItem('fos_wealth',JSON.stringify(wealth));
+}
+
+function setFilter(type){
+  posFilter=type;
+  document.querySelectorAll('.filter-btn').forEach(b=>{b.classList.toggle('active',b.dataset.filter===type);});
+  renderPortfolio();
+}
+function toggleEdit(symbol){editingPosition=editingPosition===symbol?null:symbol;renderPortfolio();}
+function updatePosition(symbol){
+  const newPrice=parseFloat(document.getElementById('edit-price-'+symbol).value);
+  const newType=document.getElementById('edit-type-'+symbol).value;
+  if(isNaN(newPrice)||newPrice<=0){alert('Enter a valid price.');return;}
+  const idx=positions.findIndex(p=>p.symbol===symbol);
+  if(idx>=0){
+    positions[idx].currentPrice=newPrice;
+    positions[idx].type=newType;
+    posUpdatedAt='manual update '+new Date().toLocaleDateString();
+    posUpdatedTimestamp=Date.now();
+    localStorage.setItem('fos_positions',JSON.stringify(positions));
+    localStorage.setItem(POS_UPDATED_KEY,posUpdatedAt);
+    localStorage.setItem('fos_pos_ts',posUpdatedTimestamp);
+    editingPosition=null;
+    renderPortfolio();
+    flash(symbol+' updated');
+  }
+}
+// Backward compat for any old callers
+function updatePrice(symbol){updatePosition(symbol);}
+
+function importCSV(event){
+  const file=event.target.files[0];if(!file)return;
+  const reader=new FileReader();
+  reader.onload=e=>{
+    const rows=e.target.result.split('\n').map(r=>r.split(','));
+    const ETF_SET=new Set(['VWCE','VUSA','VUSD','VEUR','VOO','VTI','VT','VGT','QQQ','BLOK','BLCN','CHIQ','ASHS','MCHI','KBA','VMID','IPRP','SPYM','SPLG','H4ZN','ICGA','ARKW','AFTY','ASHR','CHIE','CHII','CHIK','CNYA','CXSE']);
+    const newPos=[];
+    rows.forEach(r=>{
+      if(r[0]==='Open Positions'&&r[1]==='Data'&&r[2]==='Summary'&&r[5]){
+        const s=r[5].trim();
+        const qty=parseFloat(r[6]);
+        const cp=parseFloat(r[8]);
+        const cb=parseFloat(r[9]);
+        const closePrice=parseFloat(r[10]);
+        const cur=r[4].trim();
+        if(s&&!isNaN(qty)&&qty>0&&!isNaN(closePrice)){
+          newPos.push({symbol:s,qty,costPrice:cp,costBasis:cb,currentPrice:closePrice,currency:cur,type:ETF_SET.has(s)?'ETF':'Stock'});
+        }
+      }
+    });
+    if(newPos.length>0){
+      positions=newPos;
+      posUpdatedAt='IBKR CSV import '+new Date().toLocaleDateString();
+      posUpdatedTimestamp=Date.now();
+      localStorage.setItem('fos_positions',JSON.stringify(positions));
+      localStorage.setItem(POS_UPDATED_KEY,posUpdatedAt);
+      localStorage.setItem('fos_pos_ts',posUpdatedTimestamp);
+      flash('Imported '+newPos.length+' positions');
+      const tlast=document.getElementById('trades-last');
+      if(tlast)tlast.textContent=newPos.length+' positions imported on '+new Date().toLocaleString();
+      renderPortfolio();
+    } else flash('No positions found - check CSV format');
+  };
+  reader.readAsText(file);event.target.value='';
+}
+
+function addPositionManual(){
+  const sym=document.getElementById('add-sym').value.trim().toUpperCase();
+  const qty=parseFloat(document.getElementById('add-qty').value);
+  const cost=parseFloat(document.getElementById('add-cost').value);
+  const current=parseFloat(document.getElementById('add-current').value);
+  const cur=document.getElementById('add-cur').value;
+  const type=document.getElementById('add-type').value;
+  if(!sym||!qty||!cost||!current){alert('Fill all fields.');return;}
+  const idx=positions.findIndex(p=>p.symbol===sym);
+  if(idx>=0){
+    const ex=positions[idx];
+    const totalQty=ex.qty+qty,totalCost=ex.costBasis+(cost*qty);
+    ex.qty=totalQty;ex.costBasis=totalCost;ex.costPrice=totalCost/totalQty;ex.currentPrice=current;
+    flash(sym+' position averaged');
+  } else {
+    positions.push({symbol:sym,qty,costPrice:cost,costBasis:cost*qty,currentPrice:current,currency:cur,type});
+    flash(sym+' added');
+  }
+  localStorage.setItem('fos_positions',JSON.stringify(positions));
+  ['add-sym','add-qty','add-cost','add-current'].forEach(id=>document.getElementById(id).value='');
+  renderPortfolio();
+}
+
+// ── Wealth + Cash + Flat ───────────────────────────────────────────
+// Cash inputs are built only when accounts are added/removed.
+// On every keystroke we only update the data + total - never the input itself.
+function renderCashAccounts(){
+  const list=document.getElementById('cash-list');
+  list.innerHTML=cashAccounts.map((c,i)=>`
+    <div class="cash-row">
+      <input type="text" value="${c.bank||''}" oninput="updateCashField(${i},'bank',this.value)" onblur="updateCashField(${i},'bank',this.value)">
+      <select onchange="updateCashField(${i},'currency',this.value);recomputeCashTotal();updateNetWorthOnly();">
+        <option ${c.currency==='EUR'?'selected':''}>EUR</option>
+        <option ${c.currency==='AED'?'selected':''}>AED</option>
+        <option ${c.currency==='USD'?'selected':''}>USD</option>
+        <option ${c.currency==='GBP'?'selected':''}>GBP</option>
+      </select>
+      <input type="number" inputmode="decimal" placeholder="0" value="${c.amount||''}" oninput="updateCashAmountLive(${i},this.value)" onblur="recomputeCashTotal();updateNetWorthOnly();">
+    </div>
+  `).join('')||'<div class="empty">No accounts. Click below to add.</div>';
+  recomputeCashTotal();
+}
+
+function updateCashField(idx,field,val){
+  cashAccounts[idx][field]=val;
+  localStorage.setItem('fos_cash',JSON.stringify(cashAccounts));
+}
+
+function updateCashAmountLive(idx,val){
+  // Only update the underlying data and total - DO NOT rebuild any input.
+  cashAccounts[idx].amount=parseFloat(val)||0;
+  localStorage.setItem('fos_cash',JSON.stringify(cashAccounts));
+  recomputeCashTotal();
+}
+
+function recomputeCashTotal(){
+  let totalEUR=0;
+  cashAccounts.forEach(c=>{totalEUR+=toEUR(c.amount||0,c.currency);});
+  const el=document.getElementById('cash-total-eur');
+  if(el)el.textContent=fmt(totalEUR);
+}
+
+function updateNetWorthOnly(){
+  // Recomputes the net worth header + asset list, never touches inputs.
+  let cashTotalEUR=0;
+  cashAccounts.forEach(c=>{cashTotalEUR+=toEUR(c.amount||0,c.currency);});
+  cashTotalEUR=Math.round(cashTotalEUR);
+  const{yourShare}=calcFlatValue();
+  const flatEUR=Math.round(yourShare);
+  const cryptoEUR=Math.round(wealth.cryptoLive||0);
+  const total=flatEUR+wealth.broker+cryptoEUR+cashTotalEUR;
+  const nwEl=document.getElementById('nw-total');
+  if(nwEl)nwEl.textContent=fmt(total);
+  const assets=[
+    {name:'Dubai flat (your share)',val:flatEUR,color:'#1db954'},
+    {name:'IBKR portfolio',val:wealth.broker,color:'#3b82f6'},
+    {name:'Crypto (live)',val:cryptoEUR,color:'#f59e0b'},
+    {name:'Bank cash',val:cashTotalEUR,color:'#888'}
+  ];
+  const al=document.getElementById('asset-list');
+  if(al)al.innerHTML=assets.filter(a=>a.val>0).map(a=>{
+    const pct=total>0?Math.round((a.val/total)*100):0;
+    return`<div class="asset-row"><div class="asset-left"><div class="asset-dot" style="background:${a.color}"></div><div><div class="asset-name">${a.name}</div><div class="asset-pct">${pct}% of total</div></div></div><div class="asset-val">${fmt(a.val)}</div></div>`;
+  }).join('')||'<div class="empty">Add your assets below</div>';
+}
+
+function addCashAccount(){
+  cashAccounts.push({bank:'New account',currency:'EUR',amount:0});
+  localStorage.setItem('fos_cash',JSON.stringify(cashAccounts));
+  renderCashAccounts();
+}
+
+function calcFlatValue(){
+  if(!flat.purchaseAED||flat.purchaseAED<=0)return{aedValue:0,eurValue:0,yourShare:0,yearsOwned:0};
+  const handoverDate=flat.handoverDate?new Date(flat.handoverDate):new Date('2026-03-24');
+  const today=new Date();
+  const yearsOwned=Math.max(0,(today-handoverDate)/(365.25*86400000));
+  const aedValue=flat.purchaseAED*Math.pow(1+(flat.appreciation||0)/100,yearsOwned);
+  const eurValue=aedValue/euraed;
+  const yourShare=eurValue*((flat.ownership||100)/100);
+  return{aedValue,eurValue,yourShare,yearsOwned};
+}
+
+function renderFlat(){
+  document.getElementById('flat-purchase').value=flat.purchaseAED||'';
+  document.getElementById('flat-date').value=flat.handoverDate||'2026-03-24';
+  document.getElementById('flat-appreciation').value=flat.appreciation!=null?flat.appreciation:4;
+  document.getElementById('flat-ownership').value=flat.ownership!=null?flat.ownership:50;
+  const{aedValue,eurValue,yourShare,yearsOwned}=calcFlatValue();
+  if(flat.purchaseAED>0){
+    document.getElementById('flat-summary').style.display='block';
+    const yearsStr=yearsOwned<1?Math.round(yearsOwned*12)+' months':yearsOwned.toFixed(1)+' years';
+    document.getElementById('flat-years-owned').textContent=yearsStr;
+    document.getElementById('flat-aed-value').textContent='د.إ '+Math.round(aedValue).toLocaleString();
+    document.getElementById('flat-eur-value').textContent=fmt(eurValue);
+    document.getElementById('flat-your-share').textContent=fmt(yourShare);
+  } else {
+    document.getElementById('flat-summary').style.display='none';
+  }
+}
+
+function updateFlat(){
+  flat.purchaseAED=parseFloat(document.getElementById('flat-purchase').value)||0;
+  flat.handoverDate=document.getElementById('flat-date').value||'2026-03-24';
+  flat.appreciation=parseFloat(document.getElementById('flat-appreciation').value);
+  if(isNaN(flat.appreciation))flat.appreciation=4;
+  flat.ownership=parseFloat(document.getElementById('flat-ownership').value);
+  if(isNaN(flat.ownership))flat.ownership=50;
+  localStorage.setItem('fos_flat',JSON.stringify(flat));
+  renderFlat();
+  renderWealth();
+  flash('Flat saved');
+}
+
+function renderWealth(){
+  if(!document.getElementById('in-broker').value){
+    document.getElementById('in-broker').value=wealth.broker||'';
+  }
+  let cashTotalEUR=0;
+  cashAccounts.forEach(c=>{cashTotalEUR+=toEUR(c.amount||0,c.currency);});
+  cashTotalEUR=Math.round(cashTotalEUR);
+  const{yourShare}=calcFlatValue();
+  const flatEUR=Math.round(yourShare);
+  const cryptoEUR=Math.round(wealth.cryptoLive||0);
+  const total=flatEUR+wealth.broker+cryptoEUR+cashTotalEUR;
+  document.getElementById('nw-total').textContent=fmt(total);
+  const assets=[
+    {name:'Dubai flat (your share)',val:flatEUR,color:'#1db954'},
+    {name:'IBKR portfolio',val:wealth.broker,color:'#3b82f6'},
+    {name:'Crypto (live)',val:cryptoEUR,color:'#f59e0b'},
+    {name:'Bank cash',val:cashTotalEUR,color:'#888'}
+  ];
+  document.getElementById('asset-list').innerHTML=assets.filter(a=>a.val>0).map(a=>{
+    const pct=total>0?Math.round((a.val/total)*100):0;
+    return`<div class="asset-row"><div class="asset-left"><div class="asset-dot" style="background:${a.color}"></div><div><div class="asset-name">${a.name}</div><div class="asset-pct">${pct}% of total</div></div></div><div class="asset-val">${fmt(a.val)}</div></div>`;
+  }).join('')||'<div class="empty">Add your assets below</div>';
+  if(wealth.broker>0){
+    const rate=0.07,monthly=1000;
+    document.getElementById('proj-placeholder').style.display='none';
+    document.getElementById('proj-rows').innerHTML=[1,2,3,5,10,15,20].map(y=>{
+      const fv=wealth.broker*Math.pow(1+rate,y)+monthly*12*((Math.pow(1+rate,y)-1)/rate);
+      return`<div class="proj-row"><div class="proj-year">+${y}yr (${new Date().getFullYear()+y})</div><div class="proj-val ${y>=10?'green':''}">${fmt(fv)}</div></div>`;
+    }).join('');
+  }
+  // Only rebuild cash list if it's empty (first render or after add/remove)
+  const cashList=document.getElementById('cash-list');
+  if(!cashList.querySelector('.cash-row'))renderCashAccounts();
+  else recomputeCashTotal();
+  // Flat fields - only populate if empty
+  const fp=document.getElementById('flat-purchase');
+  if(fp&&!fp.value)renderFlat();
+  else if(flat.purchaseAED>0)renderFlatSummaryOnly();
+  // Crypto: render exchanges, fetch prices if stale
+  renderCryptoExchanges();
+  const stale=!cryptoFetchedAt||(Date.now()-new Date(cryptoFetchedAt).getTime())>86400000;
+  if(stale)refreshCryptoPrices();
+  else updateCryptoDisplay();
+}
+
+function renderFlatSummaryOnly(){
+  const{aedValue,eurValue,yourShare,yearsOwned}=calcFlatValue();
+  if(flat.purchaseAED>0){
+    document.getElementById('flat-summary').style.display='block';
+    const yearsStr=yearsOwned<1?Math.round(yearsOwned*12)+' months':yearsOwned.toFixed(1)+' years';
+    document.getElementById('flat-years-owned').textContent=yearsStr;
+    document.getElementById('flat-aed-value').textContent='د.إ '+Math.round(aedValue).toLocaleString();
+    document.getElementById('flat-eur-value').textContent=fmt(eurValue);
+    document.getElementById('flat-your-share').textContent=fmt(yourShare);
+  }
+}
+
+function updateWealth(){
+  wealth.broker=parseFloat(document.getElementById('in-broker').value)||0;
+  localStorage.setItem('fos_wealth',JSON.stringify(wealth));
+  renderWealth();flash('Snapshot saved');
+}
+
+// ── Crypto ─────────────────────────────────────────────────────────
+// Tries multiple free APIs in sequence. Shows the actual error so user can see what's happening.
+// Falls back gracefully and remembers cached prices.
+
+const CRYPTO_SYMBOLS_NEEDED=['BTC','ETH','SOL','BNB','MNT','NEAR','ATOM','XTZ'];
+// Proxy symbols use a base coin's price
+const PROXY_MAP={stETH:'ETH',PSOL:'SOL'};
+
+async function tryFetch(url,timeoutMs){
+  const controller=new AbortController();
+  const timer=setTimeout(()=>controller.abort(),timeoutMs||8000);
+  try{
+    const res=await fetch(url,{signal:controller.signal});
+    clearTimeout(timer);
+    if(!res.ok)throw new Error('HTTP '+res.status);
+    return await res.json();
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+// API 1: CryptoCompare (best for browser CORS)
+async function fetchCryptoCompare(){
+  const url='https://min-api.cryptocompare.com/data/pricemultifull?fsyms='+CRYPTO_SYMBOLS_NEEDED.join(',')+'&tsyms=USD,EUR';
+  const data=await tryFetch(url);
+  if(!data||!data.RAW)throw new Error('CryptoCompare: empty response');
+  const out={};
+  Object.entries(data.RAW).forEach(([sym,curs])=>{
+    if(curs.USD&&curs.EUR){
+      out[sym]={
+        usd:curs.USD.PRICE,
+        eur:curs.EUR.PRICE,
+        change24h:curs.EUR.CHANGEPCT24HOUR||curs.USD.CHANGEPCT24HOUR||0
+      };
+    }
+  });
+  if(Object.keys(out).length===0)throw new Error('CryptoCompare: no usable data');
+  return out;
+}
+
+// API 2: Binance public (data-api endpoint built for client use)
+async function fetchBinance(){
+  const pairs={BTC:'BTCUSDT',ETH:'ETHUSDT',SOL:'SOLUSDT',BNB:'BNBUSDT',MNT:'MNTUSDT',NEAR:'NEARUSDT',ATOM:'ATOMUSDT',XTZ:'XTZUSDT'};
+  const symbolsArr='['+Object.values(pairs).map(s=>'"'+s+'"').join(',')+']';
+  const priceUrl='https://data-api.binance.vision/api/v3/ticker/24hr?symbols='+encodeURIComponent(symbolsArr);
+  const data=await tryFetch(priceUrl);
+  const pairToBase={};
+  Object.entries(pairs).forEach(([sym,pair])=>{pairToBase[pair]=sym;});
+  const usdToEur=1/eurusd;
+  const out={};
+  data.forEach(item=>{
+    const base=pairToBase[item.symbol];
+    if(base){
+      const usd=parseFloat(item.lastPrice);
+      out[base]={
+        usd:usd,
+        eur:usd*usdToEur,
+        change24h:parseFloat(item.priceChangePercent)||0
+      };
+    }
+  });
+  if(Object.keys(out).length===0)throw new Error('Binance: no usable data');
+  return out;
+}
+
+// API 3: CoinGecko (last resort)
+async function fetchCoinGecko(){
+  const ids='bitcoin,ethereum,solana,binancecoin,mantle,near,cosmos,tezos';
+  const url='https://api.coingecko.com/api/v3/simple/price?ids='+ids+'&vs_currencies=usd,eur&include_24hr_change=true';
+  const data=await tryFetch(url);
+  const idToSym={bitcoin:'BTC',ethereum:'ETH',solana:'SOL',binancecoin:'BNB',mantle:'MNT',near:'NEAR',cosmos:'ATOM',tezos:'XTZ'};
+  const out={};
+  Object.entries(data).forEach(([id,p])=>{
+    const sym=idToSym[id];
+    if(sym&&p.usd){
+      out[sym]={usd:p.usd,eur:p.eur||p.usd/eurusd,change24h:p.eur_24h_change||p.usd_24h_change||0};
+    }
+  });
+  if(Object.keys(out).length===0)throw new Error('CoinGecko: no usable data');
+  return out;
+}
+
+async function refreshCryptoPrices(){
+  const statusEl=document.getElementById('crypto-updated');
+  if(statusEl)statusEl.textContent='Fetching live prices...';
+  const attempts=[
+    // CoinGecko first because it uses unambiguous coin IDs (e.g. 'mantle' specifically = Mantle Network).
+    // CryptoCompare and Binance use ticker symbols which can collide between different tokens.
+    {name:'CoinGecko',fn:fetchCoinGecko},
+    {name:'Binance',fn:fetchBinance},
+    {name:'CryptoCompare',fn:fetchCryptoCompare}
+  ];
+  const errors=[];
+  let prices=null,source=null;
+  for(const a of attempts){
+    try{
+      prices=await a.fn();
+      source=a.name;
+      break;
+    }catch(e){
+      errors.push(a.name+': '+e.message);
+    }
+  }
+  if(!prices){
+    // All failed - show all errors
+    if(statusEl){
+      statusEl.innerHTML='<span style="color:var(--red);">All price sources failed.</span> Enter manually below.<br><span style="font-size:10px;color:var(--text3);">'+errors.join(' · ')+'</span>';
+    }
+    updateCryptoDisplay();
+    return;
+  }
+  // Merge into cache
+  Object.assign(cryptoPrices,prices);
+  // Handle proxy symbols
+  if(cryptoPrices.ETH)cryptoPrices.stETH={...cryptoPrices.ETH};
+  if(cryptoPrices.SOL)cryptoPrices.PSOL={...cryptoPrices.SOL};
+  // mUSD is pegged to $1
+  cryptoPrices.mUSD={usd:1,eur:1/eurusd,change24h:0};
+  cryptoFetchedAt=new Date().toISOString();
+  localStorage.setItem('fos_crypto_prices',JSON.stringify(cryptoPrices));
+  localStorage.setItem('fos_crypto_at',cryptoFetchedAt);
+  if(statusEl){
+    const d=new Date(cryptoFetchedAt);
+    statusEl.innerHTML='Updated '+d.toLocaleString()+' <span style="font-size:10px;color:var(--text3);">· source: '+source+'</span>';
+  }
+  updateCryptoDisplay();
+}
+
+function calcCryptoValue(){
+  let total=0;
+  Object.entries(cryptoHoldings).forEach(([exchange,coins])=>{
+    coins.forEach(c=>{
+      const price=cryptoPrices[c.symbol];
+      if(price)total+=c.qty*price.eur;
+    });
+  });
+  return total;
+}
+
+function updateCryptoDisplay(){
+  const total=calcCryptoValue();
+  wealth.cryptoLive=total;
+  localStorage.setItem('fos_wealth',JSON.stringify(wealth));
+  const totalEl=document.getElementById('crypto-total');
+  if(totalEl)totalEl.textContent=fmt(total);
+  const updEl=document.getElementById('crypto-updated');
+  if(updEl&&cryptoFetchedAt){
+    const d=new Date(cryptoFetchedAt);
+    updEl.textContent='Updated '+d.toLocaleString();
+  }
+  // Refresh exchange rows with new prices
+  renderCryptoExchanges();
+  // Update net worth header
+  updateNetWorthOnly();
+}
+
+function renderCryptoExchanges(){
+  const container=document.getElementById('crypto-exchanges');
+  if(!container)return;
+  const html=Object.entries(cryptoHoldings).map(([exchange,coins])=>{
+    let exchangeTotal=0;
+    const coinRows=coins.map(c=>{
+      const price=cryptoPrices[c.symbol];
+      const valEUR=price?c.qty*price.eur:0;
+      exchangeTotal+=valEUR;
+      const change=price?price.change24h:0;
+      const changeClass=change>=0?'green':'red';
+      const priceStr=price?'$'+price.usd.toFixed(2):'—';
+      const changeStr=price?(change>=0?'+':'')+change.toFixed(1)+'%':'—';
+      return`<div style="display:flex;justify-content:space-between;padding:6px 0;font-size:13px;">
+        <div><span style="font-weight:600;">${c.symbol}</span> <span class="crypto-qty" style="color:var(--text3);font-size:11px;">${c.qty}</span> · <span style="color:var(--text2);font-size:11px;">${priceStr} <span class="${changeClass}">${changeStr}</span></span></div>
+        <div class="crypto-val" style="font-weight:600;">${fmt(valEUR)}</div>
+      </div>`;
+    }).join('');
+    return`<div style="margin-bottom:14px;">
+      <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px;">
+        <div style="font-size:12px;font-weight:600;color:var(--text);text-transform:uppercase;letter-spacing:0.06em;">${exchange}</div>
+        <div class="crypto-val" style="font-size:14px;font-weight:600;">${fmt(exchangeTotal)}</div>
+      </div>
+      ${coinRows}
+    </div>`;
+  }).join('');
+  container.innerHTML=html||'<div class="empty">No crypto holdings</div>';
+}
+
+function toggleManualCrypto(){
+  const el=document.getElementById('manual-crypto');
+  const isHidden=el.style.display==='none';
+  el.style.display=isHidden?'block':'none';
+  if(isHidden)renderManualCryptoInputs();
+}
+
+function renderManualCryptoInputs(){
+  // Collect unique symbols across all holdings
+  const symbols=new Set();
+  Object.values(cryptoHoldings).forEach(arr=>arr.forEach(c=>symbols.add(c.symbol)));
+  const symbolList=Array.from(symbols).sort();
+  document.getElementById('manual-crypto-inputs').innerHTML=symbolList.map(sym=>{
+    const currentPrice=cryptoPrices[sym]?cryptoPrices[sym].usd:'';
+    return`<div style="display:flex;gap:8px;align-items:center;margin-bottom:8px;">
+      <div style="font-size:13px;font-weight:600;width:60px;">${sym}</div>
+      <input type="number" step="0.0001" inputmode="decimal" id="manual-price-${sym}" value="${currentPrice||''}" placeholder="USD" style="margin-bottom:0;padding:7px 10px;font-size:13px;">
+    </div>`;
+  }).join('');
+}
+
+function saveManualPrices(){
+  const symbols=new Set();
+  Object.values(cryptoHoldings).forEach(arr=>arr.forEach(c=>symbols.add(c.symbol)));
+  let changed=0;
+  symbols.forEach(sym=>{
+    const input=document.getElementById('manual-price-'+sym);
+    if(input){
+      const usd=parseFloat(input.value);
+      if(!isNaN(usd)&&usd>=0){
+        cryptoPrices[sym]={usd,eur:usd/eurusd,change24h:0};
+        changed++;
+      }
+    }
+  });
+  // Propagate proxy prices
+  if(cryptoPrices.ETH)cryptoPrices.stETH={...cryptoPrices.ETH};
+  if(cryptoPrices.SOL)cryptoPrices.PSOL={...cryptoPrices.SOL};
+  cryptoFetchedAt=new Date().toISOString();
+  localStorage.setItem('fos_crypto_prices',JSON.stringify(cryptoPrices));
+  localStorage.setItem('fos_crypto_at',cryptoFetchedAt);
+  flash('Manual prices saved ('+changed+')');
+  document.getElementById('manual-crypto').style.display='none';
+  updateCryptoDisplay();
+}
+
+function toggleEditCrypto(){
+  const el=document.getElementById('edit-crypto');
+  const isHidden=el.style.display==='none';
+  el.style.display=isHidden?'block':'none';
+  if(isHidden)renderEditCryptoList();
+}
+
+function renderEditCryptoList(){
+  const container=document.getElementById('edit-crypto-list');
+  container.innerHTML=Object.entries(cryptoHoldings).map(([exchange,coins])=>`
+    <div style="margin-bottom:14px;padding-bottom:14px;border-bottom:0.5px solid var(--border);">
+      <div style="display:flex;gap:8px;align-items:center;margin-bottom:10px;">
+        <input type="text" value="${exchange}" oninput="renameExchange('${exchange}',this.value)" onblur="renameExchange('${exchange}',this.value)" style="flex:1;font-size:13px;font-weight:600;padding:7px 10px;margin-bottom:0;">
+        <button class="btn-sm" onclick="removeExchange('${exchange}')" style="color:var(--red);padding:6px 10px;">Remove</button>
+      </div>
+      ${coins.map((c,i)=>`
+        <div style="display:flex;gap:6px;align-items:center;margin-bottom:6px;">
+          <input type="text" value="${c.symbol}" oninput="updateCoinSymbol('${exchange}',${i},this.value)" onblur="updateCoinSymbol('${exchange}',${i},this.value)" placeholder="BTC" style="width:80px;font-size:13px;padding:6px 8px;margin-bottom:0;text-transform:uppercase;">
+          <input type="number" step="0.00000001" value="${c.qty}" oninput="updateCoinQty('${exchange}',${i},this.value)" placeholder="0.0" style="flex:1;font-size:13px;padding:6px 8px;margin-bottom:0;">
+          <button onclick="removeCoin('${exchange}',${i})" style="background:none;border:none;color:var(--text3);font-size:16px;cursor:pointer;padding:0 6px;">×</button>
+        </div>
+      `).join('')}
+      <button class="btn-sm" onclick="addCoinToExchange('${exchange}')" style="width:100%;padding:8px;margin-top:6px;font-size:12px;">+ Add coin</button>
+    </div>
+  `).join('')||'<div class="empty">No exchanges. Click below to add.</div>';
+}
+
+function updateCoinSymbol(exchange,idx,sym){
+  if(!cryptoHoldings[exchange])return;
+  cryptoHoldings[exchange][idx].symbol=sym.toUpperCase().trim();
+  localStorage.setItem('fos_crypto',JSON.stringify(cryptoHoldings));
+}
+
+function updateCoinQty(exchange,idx,qty){
+  if(!cryptoHoldings[exchange])return;
+  cryptoHoldings[exchange][idx].qty=parseFloat(qty)||0;
+  localStorage.setItem('fos_crypto',JSON.stringify(cryptoHoldings));
+  updateCryptoDisplay();
+}
+
+function removeCoin(exchange,idx){
+  if(!cryptoHoldings[exchange])return;
+  cryptoHoldings[exchange].splice(idx,1);
+  localStorage.setItem('fos_crypto',JSON.stringify(cryptoHoldings));
+  renderEditCryptoList();
+  updateCryptoDisplay();
+}
+
+function addCoinToExchange(exchange){
+  if(!cryptoHoldings[exchange])return;
+  cryptoHoldings[exchange].push({symbol:'',qty:0});
+  localStorage.setItem('fos_crypto',JSON.stringify(cryptoHoldings));
+  renderEditCryptoList();
+}
+
+function renameExchange(oldName,newName){
+  if(oldName===newName||!newName)return;
+  if(cryptoHoldings[newName])return; // don't overwrite existing
+  cryptoHoldings[newName]=cryptoHoldings[oldName];
+  delete cryptoHoldings[oldName];
+  localStorage.setItem('fos_crypto',JSON.stringify(cryptoHoldings));
+  // Don't re-render while typing - only on blur
+}
+
+function removeExchange(exchange){
+  if(!confirm('Remove '+exchange+' and all its coins?'))return;
+  delete cryptoHoldings[exchange];
+  localStorage.setItem('fos_crypto',JSON.stringify(cryptoHoldings));
+  renderEditCryptoList();
+  updateCryptoDisplay();
+}
+
+function addCryptoExchange(){
+  let name=prompt('Exchange name:');
+  if(!name)return;
+  name=name.trim();
+  if(!name||cryptoHoldings[name])return;
+  cryptoHoldings[name]=[];
+  localStorage.setItem('fos_crypto',JSON.stringify(cryptoHoldings));
+  renderEditCryptoList();
+}
+
+
+// ── Freedom ────────────────────────────────────────────────────────
+function syncInput(sliderId,inputId){document.getElementById(inputId).value=document.getElementById(sliderId).value;}
+function syncSlider(sliderId,inputId){
+  const sl=document.getElementById(sliderId),inp=document.getElementById(inputId);
+  const v=parseFloat(inp.value);
+  if(!isNaN(v))sl.value=Math.min(Math.max(v,parseFloat(sl.min)),parseFloat(sl.max));
+}
+// ── Freedom calculator ─────────────────────────────────────────────
+// Two modes: simple (single monthly investment) or multi-country (chronological phases).
+const COUNTRIES=[
+  {code:'DE',name:'Germany',flag:'🇩🇪'},
+  {code:'IT',name:'Italy',flag:'🇮🇹'},
+  {code:'AE',name:'UAE',flag:'🇦🇪'},
+  {code:'ES',name:'Spain',flag:'🇪🇸'},
+  {code:'US',name:'United States',flag:'🇺🇸'},
+  {code:'GB',name:'United Kingdom',flag:'🇬🇧'},
+  {code:'NL',name:'Netherlands',flag:'🇳🇱'},
+  {code:'CH',name:'Switzerland',flag:'🇨🇭'},
+  {code:'PT',name:'Portugal',flag:'🇵🇹'},
+  {code:'XX',name:'Other',flag:'🌍'}
+];
+const CURRENT_YEAR=new Date().getFullYear();
+let phases=JSON.parse(localStorage.getItem('fos_phases')||'null')||[
+  {country:'DE',startYear:CURRENT_YEAR,endYear:CURRENT_YEAR+1,monthly:1000},
+  {country:'AE',startYear:CURRENT_YEAR+1,endYear:CURRENT_YEAR+6,monthly:4000},
+  {country:'IT',startYear:CURRENT_YEAR+6,endYear:null,monthly:2000}
+];
+
+function savePhases(){localStorage.setItem('fos_phases',JSON.stringify(phases));}
+function countryFlag(code){const c=COUNTRIES.find(x=>x.code===code);return c?c.flag:'🌍';}
+function countryName(code){const c=COUNTRIES.find(x=>x.code===code);return c?c.name:'Other';}
+
+function toggleMultiCountry(){
+  const on=document.getElementById('multi-on').checked;
+  document.getElementById('simple-mode-card').style.display=on?'none':'';
+  document.getElementById('multi-mode-card').style.display=on?'':'none';
+  if(on)renderPhasesList();
+  updateFreedom();
+}
+
+function restoreFreedomPrefs(){
+  // Load saved Freedom settings from localStorage on app start / tab open
+  try{
+    const saved=JSON.parse(localStorage.getItem('fos_freedom')||'null');
+    if(!saved)return;
+    if(saved.income!=null){
+      document.getElementById('sl-income-val').value=saved.income;
+      document.getElementById('sl-income').value=Math.min(saved.income,20000);
+    }
+    if(saved.age!=null){
+      document.getElementById('sl-age-val').value=saved.age;
+      document.getElementById('sl-age').value=Math.min(Math.max(saved.age,20),65);
+    }
+    if(saved.assets!=null){
+      document.getElementById('sl-assets-val').value=saved.assets;
+      document.getElementById('sl-assets').value=Math.min(saved.assets,2000000);
+    }
+    if(saved.nominal!=null){
+      document.getElementById('sl-rate-val').value=saved.nominal;
+      document.getElementById('sl-rate').value=Math.min(Math.max(saved.nominal,1),15);
+    }
+    if(saved.inflOn!=null){
+      document.getElementById('sl-infl-on').checked=saved.inflOn;
+    }
+    if(saved.inflation!=null){
+      document.getElementById('sl-infl-val').value=saved.inflation;
+      document.getElementById('sl-infl').value=Math.min(Math.max(saved.inflation,0),6);
+    }
+    if(saved.multiOn!=null){
+      document.getElementById('multi-on').checked=saved.multiOn;
+    }
+    if(saved.simpleInvest!=null){
+      document.getElementById('simple-invest-val').value=saved.simpleInvest;
+      document.getElementById('simple-invest').value=Math.min(saved.simpleInvest,15000);
+    }
+  }catch(e){console.warn('Failed to restore Freedom prefs:',e);}
+  // Restore joint/partner prefs
+  try{
+    const j=JSON.parse(localStorage.getItem('fos_joint')||'null');
+    if(j){
+      if(j.selfInvest!=null){
+        document.getElementById('joint-self-invest-val').value=j.selfInvest;
+        document.getElementById('joint-self-invest').value=Math.min(j.selfInvest,15000);
+      }
+      if(j.partnerInvest!=null){
+        document.getElementById('partner-invest-val').value=j.partnerInvest;
+        document.getElementById('partner-invest').value=Math.min(j.partnerInvest,15000);
+      }
+      if(j.jointIncome!=null){
+        document.getElementById('joint-income-val').value=j.jointIncome;
+        document.getElementById('joint-income').value=Math.min(Math.max(j.jointIncome,2000),40000);
+      }
+    }
+  }catch(e){console.warn('Failed to restore joint prefs:',e);}
+}
+
+function renderPhasesList(){
+  phases.sort((a,b)=>a.startYear-b.startYear);
+  savePhases();
+  const container=document.getElementById('phases-list');
+  if(!container)return;
+  container.innerHTML=phases.map((ph,i)=>{
+    const countryOpts=COUNTRIES.map(c=>`<option value="${c.code}" ${c.code===ph.country?'selected':''}>${c.flag} ${c.name}</option>`).join('');
+    return `<div class="phase-row">
+      <div class="phase-row-header">
+        <select class="phase-country-select" onchange="updatePhase(${i},'country',this.value)">${countryOpts}</select>
+        <button class="phase-remove" onclick="removePhase(${i})" title="Remove">×</button>
+      </div>
+      <div class="phase-grid">
+        <div><label>Start year</label><input type="number" inputmode="numeric" value="${ph.startYear}" min="2020" max="2080" onchange="updatePhase(${i},'startYear',parseInt(this.value)||${CURRENT_YEAR})"></div>
+        <div><label>End year</label>
+          <select onchange="updatePhaseEnd(${i},this.value)">
+            ${[...Array(40)].map((_,k)=>{const y=ph.startYear+k+1;return `<option value="${y}" ${ph.endYear===y?'selected':''}>${y}</option>`;}).join('')}
+            <option value="until-retire" ${ph.endYear===null?'selected':''}>Until retirement</option>
+          </select>
+        </div>
+      </div>
+      <div class="phase-grid" style="grid-template-columns:1fr;">
+        <div><label>Monthly investment (€)</label><input type="number" inputmode="decimal" value="${ph.monthly}" min="0" onchange="updatePhase(${i},'monthly',parseFloat(this.value)||0)"></div>
+      </div>
+      <div class="phase-summary">
+        ${countryFlag(ph.country)} ${countryName(ph.country)} · ${ph.endYear===null?'from '+ph.startYear+' until FI':ph.startYear+'–'+ph.endYear+' ('+(ph.endYear-ph.startYear)+' yrs)'} · €${ph.monthly.toLocaleString()}/mo
+      </div>
+    </div>`;
+  }).join('')||'<div class="empty">No phases. Click below to add one.</div>';
+}
+
+function updatePhase(i,field,val){
+  if(!phases[i])return;
+  phases[i][field]=val;
+  if(field==='startYear')renderPhasesList();
+  else savePhases();
+  updateFreedom();
+}
+
+function updatePhaseEnd(i,val){
+  if(!phases[i])return;
+  if(val==='until-retire')phases[i].endYear=null;
+  else phases[i].endYear=parseInt(val);
+  savePhases();
+  updateFreedom();
+}
+
+function addPhase(){
+  let startYear=CURRENT_YEAR;
+  if(phases.length>0){
+    const last=phases[phases.length-1];
+    startYear=last.endYear||last.startYear+1;
+  }
+  phases.push({country:'DE',startYear,endYear:startYear+1,monthly:1000});
+  renderPhasesList();
+  updateFreedom();
+}
+
+function removePhase(i){
+  if(!confirm('Remove this phase?'))return;
+  phases.splice(i,1);
+  renderPhasesList();
+  updateFreedom();
+}
+
+// ── Partner portfolio + Joint Freedom ──────────────────────────────
+let partnerValue=parseFloat(localStorage.getItem('fos_partner_value')||'0')||0;
+let partnerUpdatedAt=localStorage.getItem('fos_partner_updated')||'';
+
+function importPartnerCSV(event){
+  const file=event.target.files[0];if(!file)return;
+  const reader=new FileReader();
+  reader.onload=e=>{
+    const rows=e.target.result.split('\n').map(r=>r.split(','));
+    let totalEUR=0,count=0;
+    rows.forEach(r=>{
+      if(r[0]==='Open Positions'&&r[1]==='Data'&&r[2]==='Summary'&&r[5]){
+        const qty=parseFloat(r[6]);
+        const closePrice=parseFloat(r[10]);
+        const cur=(r[4]||'EUR').trim();
+        if(!isNaN(qty)&&qty>0&&!isNaN(closePrice)){
+          totalEUR+=toEUR(closePrice*qty,cur);
+          count++;
+        }
+      }
+    });
+    // Also capture cash from Net Asset Value if present (base currency EUR)
+    let cashEUR=0;
+    rows.forEach(r=>{
+      if(r[0]==='Net Asset Value'&&r[1]==='Data'&&r[2]&&r[2].trim()==='Cash'){
+        const v=parseFloat(r[6]);
+        if(!isNaN(v))cashEUR=v; // base currency is EUR in IBKR statements
+      }
+    });
+    if(count>0){
+      partnerValue=Math.round(totalEUR+cashEUR);
+      partnerUpdatedAt='CSV '+new Date().toLocaleDateString();
+      localStorage.setItem('fos_partner_value',partnerValue);
+      localStorage.setItem('fos_partner_updated',partnerUpdatedAt);
+      flash('Partner portfolio: '+count+' positions, '+fmt(partnerValue));
+      updateFreedom();
+    } else flash('No positions found - check CSV');
+  };
+  reader.readAsText(file);event.target.value='';
+}
+
+function toggleJoint(){updateJoint();}
+
+function updateFreedom(){
+  const income=parseFloat(document.getElementById('sl-income-val').value)||5000;
+  const age=parseFloat(document.getElementById('sl-age-val').value)||33;
+  const assets=parseFloat(document.getElementById('sl-assets-val').value)||0;
+  const nominal=(parseFloat(document.getElementById('sl-rate-val').value)||7)/100;
+  const inflEl=document.getElementById('sl-infl-val');
+  const inflOn=document.getElementById('sl-infl-on').checked;
+  const inflBlock=document.getElementById('infl-block');
+  if(inflBlock)inflBlock.style.display=inflOn?'':'none';
+  const inflation=inflOn?((inflEl?parseFloat(inflEl.value):2.8)/100):0;
+  const realReturn=(1+nominal)/(1+inflation)-1;
+  const target=income*12*25;
+  const multiOn=document.getElementById('multi-on').checked;
+  const simpleInvest=parseFloat(document.getElementById('simple-invest-val').value)||0;
+  localStorage.setItem('fos_freedom',JSON.stringify({
+    income,age,assets,nominal:Math.round(nominal*1000)/10,inflOn,inflation:Math.round(inflation*1000)/10,multiOn,simpleInvest
+  }));
+
+  let getMonthlyForYear;
+  if(multiOn){
+    phases.sort((a,b)=>a.startYear-b.startYear);
+    getMonthlyForYear=(off)=>{
+      const yr=CURRENT_YEAR+off;
+      for(const ph of phases){
+        const end=ph.endYear===null?9999:ph.endYear;
+        if(yr>=ph.startYear&&yr<end)return ph.monthly;
+      }
+      return 0;
+    };
+  } else {
+    getMonthlyForYear=()=>simpleInvest;
+  }
+
+  let p=assets,years=0;
+  while(p<target&&years<60){
+    p=p*(1+realReturn)+getMonthlyForYear(years)*12;
+    years++;
+  }
+  const fiAge=age+years, fiYear=CURRENT_YEAR+years;
+  document.getElementById('ret-year').textContent=years<60?fiYear:'60+';
+  document.getElementById('ret-age-result').textContent='Age '+fiAge+' · in '+years+' years';
+  if(inflOn){
+    const futureNominal=income*Math.pow(1+inflation,years);
+    document.getElementById('ret-target').textContent='Target: '+fmt(target)+' ('+fmt(income)+'/mo today · ~'+fmt(futureNominal)+'/mo nominal at FI)';
+  } else {
+    document.getElementById('ret-target').textContent='Target: '+fmt(target)+' ('+fmt(income)+'/mo × 25 years)';
+  }
+
+  const milestones=new Set();
+  for(let y=5;y<=years;y+=5)milestones.add(y);
+  milestones.add(years);
+  if(multiOn){
+    phases.forEach(ph=>{
+      const off=ph.startYear-CURRENT_YEAR;
+      if(off>0&&off<years)milestones.add(off);
+      if(ph.endYear!==null){const eo=ph.endYear-CURRENT_YEAR;if(eo>0&&eo<years)milestones.add(eo);}
+    });
+  }
+  const sortedYears=[...milestones].sort((a,b)=>a-b).filter(y=>y>0&&y<=years+1);
+  let simP=assets,simY=0;const rows=[];
+  for(const y of sortedYears){
+    while(simY<y&&simY<years){simP=simP*(1+realReturn)+getMonthlyForYear(simY)*12;simY++;}
+    const pct=Math.min(100,Math.round((simP/target)*100));
+    const isFI=y===years;
+    let label='Year '+y+' · Age '+(age+y)+' ('+(CURRENT_YEAR+y)+')';
+    if(multiOn){const yr=CURRENT_YEAR+y;const sh=phases.find(ph=>ph.startYear===yr);if(sh)label+=' '+countryFlag(sh.country);}
+    if(isFI)label+=' 🎯 FI';
+    rows.push(`<div class="proj-row" style="${isFI?'border-top:1px solid var(--green);padding-top:10px;margin-top:4px;':''}"><div class="proj-year" style="${isFI?'color:var(--green);font-weight:600;':''}">${label}</div><div class="proj-val ${pct>=100?'green':''}">${fmt(simP)} · ${pct}%</div></div>`);
+  }
+  document.getElementById('freedom-proj').innerHTML=rows.join('');
+}
+
+// ── Joint household projection (Partner tab) ───────────────────────
+function updateJoint(){
+  // Pull shared assumptions from Freedom inputs
+  const age=parseFloat(document.getElementById('sl-age-val').value)||33;
+  const selfAssets=parseFloat(document.getElementById('sl-assets-val').value)||0;
+  const nominal=(parseFloat(document.getElementById('sl-rate-val').value)||7)/100;
+  const inflOn=document.getElementById('sl-infl-on').checked;
+  const inflEl=document.getElementById('sl-infl-val');
+  const inflation=inflOn?((inflEl?parseFloat(inflEl.value):2.8)/100):0;
+  const realReturn=(1+nominal)/(1+inflation)-1;
+
+  const selfInvest=parseFloat(document.getElementById('joint-self-invest-val').value)||0;
+  const partnerInvest=parseFloat(document.getElementById('partner-invest-val').value)||0;
+  const jointIncome=parseFloat(document.getElementById('joint-income-val').value)||10000;
+  localStorage.setItem('fos_joint',JSON.stringify({selfInvest,partnerInvest,jointIncome}));
+
+  // Partner value label
+  const pvEl=document.getElementById('partner-value');
+  if(pvEl)pvEl.textContent=partnerValue>0?fmt(partnerValue)+(partnerUpdatedAt?' · '+partnerUpdatedAt:''):'No CSV uploaded yet';
+
+  const combined=selfAssets+partnerValue;
+  const target=jointIncome*12*25;
+  const monthly=selfInvest+partnerInvest;
+
+  document.getElementById('joint-self-assets').textContent=fmt(selfAssets);
+  document.getElementById('joint-partner-assets').textContent=fmt(partnerValue);
+  document.getElementById('joint-combined-assets').textContent=fmt(combined);
+
+  let p=combined,years=0;
+  while(p<target&&years<60){p=p*(1+realReturn)+monthly*12;years++;}
+  const fiAge=age+years, fiYear=CURRENT_YEAR+years;
+  document.getElementById('joint-ret-year').textContent=years<60?fiYear:'60+';
+  document.getElementById('joint-ret-age').textContent='Household FI · age '+fiAge+' · in '+years+' years';
+  if(inflOn){
+    const futureNominal=jointIncome*Math.pow(1+inflation,years);
+    document.getElementById('joint-ret-target').textContent='Household target: '+fmt(target)+' ('+fmt(jointIncome)+'/mo today · ~'+fmt(futureNominal)+'/mo nominal at FI)';
+  } else {
+    document.getElementById('joint-ret-target').textContent='Household target: '+fmt(target)+' ('+fmt(jointIncome)+'/mo × 25 years)';
+  }
+
+  const milestones=new Set();
+  for(let y=5;y<=years;y+=5)milestones.add(y);
+  milestones.add(years);
+  const sortedYears=[...milestones].sort((a,b)=>a-b).filter(y=>y>0&&y<=years+1);
+  let simP=combined,simY=0;const rows=[];
+  for(const y of sortedYears){
+    while(simY<y&&simY<years){simP=simP*(1+realReturn)+monthly*12;simY++;}
+    const pct=Math.min(100,Math.round((simP/target)*100));
+    const isFI=y===years;
+    let label='Year '+y+' · Age '+(age+y)+' ('+(CURRENT_YEAR+y)+')';
+    if(isFI)label+=' 🎯 Joint FI';
+    rows.push(`<div class="proj-row" style="${isFI?'border-top:1px solid var(--green);padding-top:10px;margin-top:4px;':''}"><div class="proj-year" style="${isFI?'color:var(--green);font-weight:600;':''}">${label}</div><div class="proj-val ${pct>=100?'green':''}">${fmt(simP)} · ${pct}%</div></div>`);
+  }
+  document.getElementById('joint-proj').innerHTML=rows.join('');
+}
+
+// ── Insight ────────────────────────────────────────────────────────
+async function getInsight(){
+  const key=localStorage.getItem('fos_apikey');
+  if(!key){alert('Add API key in More tab.');return;}
+  const{income,spent,cats}=getMonthData(viewMonth,viewYear);
+  const catStr=Object.entries(cats).map(([k,v])=>k+':'+fmt(v)).join(', ');
+  const area=document.getElementById('insight-area');
+  area.innerHTML='<div class="insight-box" style="color:var(--text3);">Analyzing...</div>';
+  try{
+    const res=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:800,messages:[{role:'user',content:'Direct personal finance advisor. 3 insights, one uncomfortable truth. Format: GOOD/WARN/INFO tag + max 35 words. Income '+fmt(income)+', Spent '+fmt(spent)+', Net '+fmt(income-spent)+', Savings rate '+(income>0?Math.round(((income-spent)/income)*100):0)+'%, Categories: '+(catStr||'none')+'.'}]})
+    });
+    const data=await res.json();
+    area.innerHTML=data.content[0].text.split('\n').filter(l=>l.trim()).map(line=>{
+      if(line.includes('GOOD'))return'<div class="insight-box"><div class="insight-tag tag-good">Good</div>'+line.replace(/GOOD[:\-]?\s*/i,'')+'</div>';
+      if(line.includes('WARN'))return'<div class="insight-box"><div class="insight-tag tag-warn">Watch</div>'+line.replace(/WARN[:\-]?\s*/i,'')+'</div>';
+      if(line.includes('INFO'))return'<div class="insight-box"><div class="insight-tag tag-info">Insight</div>'+line.replace(/INFO[:\-]?\s*/i,'')+'</div>';
+      return line.trim()?'<div class="insight-box">'+line+'</div>':'';
+    }).join('');
+  }catch(e){area.innerHTML='<div class="insight-box" style="color:var(--red);">Failed.</div>';}
+}
+
+// ── Settings ───────────────────────────────────────────────────────
+function saveApiKey(){localStorage.setItem('fos_apikey',document.getElementById('api-key-input').value.trim());flash('API key saved');}
+function saveCurrency(){currency=document.getElementById('currency-select').value;localStorage.setItem('fos_currency',currency);}
+function exportData(){
+  const blob=new Blob([JSON.stringify({transactions,wealth,positions,cashAccounts,flat,cryptoHoldings,cryptoPrices,exportDate:new Date().toISOString()},null,2)],{type:'application/json'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='finance-os-export.json';a.click();
+}
+function clearData(){if(confirm('Delete ALL data including bank, flat, crypto, and transactions? This cannot be undone.')){localStorage.clear();location.reload();}}
+function resetTransactionsOnly(){
+  if(confirm('Reload transactions from seed? Bank accounts, flat details, crypto holdings, and portfolio data will be preserved.')){
+    transactions=JSON.parse(JSON.stringify(SEED_TX));
+    localStorage.setItem('fos_tx',JSON.stringify(transactions));
+    flash('Transactions reloaded');
+    if(document.getElementById('screen-overview').classList.contains('active'))renderOverview();
+  }
+}
+function resetPositions(){
+  if(confirm('Reset portfolio to IBKR May 8 snapshot?')){
+    positions=JSON.parse(JSON.stringify(SEED));
+    posUpdatedAt='May 22, 2026 (IBKR statement)';
+    localStorage.setItem('fos_positions',JSON.stringify(positions));
+    localStorage.setItem(POS_UPDATED_KEY,posUpdatedAt);
+    flash('Portfolio reset');
+    renderPortfolio();
+  }
+}
+
+// ── Navigation ─────────────────────────────────────────────────────
+function showScreen(id,btn){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('screen-'+id).classList.add('active');
+  btn.classList.add('active');
+  // Center the active tab in the scrollable nav
+  if(btn.scrollIntoView)btn.scrollIntoView({behavior:'smooth',block:'nearest',inline:'center'});
+  if(id==='overview')renderOverview();
+  if(id==='wealth')renderWealth();
+  if(id==='freedom'){
+    restoreFreedomPrefs();
+    if(wealth.broker>0){
+      document.getElementById('sl-assets-val').value=Math.round(wealth.broker);
+      document.getElementById('sl-assets').value=Math.min(Math.round(wealth.broker),2000000);
+    }
+    // Ensure UI matches multi-on state on every open
+    const multiOn=document.getElementById('multi-on').checked;
+    document.getElementById('simple-mode-card').style.display=multiOn?'none':'';
+    document.getElementById('multi-mode-card').style.display=multiOn?'':'none';
+    if(multiOn)renderPhasesList();
+    updateFreedom();
+  }
+  if(id==='portfolio')renderPortfolio();
+  if(id==='partner'){
+    restoreFreedomPrefs();
+    if(wealth.broker>0){
+      document.getElementById('sl-assets-val').value=Math.round(wealth.broker);
+    }
+    updateJoint();
+  }
+  if(id==='trades'){
+    const tlast=document.getElementById('trades-last');
+    if(tlast)tlast.textContent=posUpdatedAt;
+  }
+  if(id==='settings'){updateFXDisplay();}
+}
+
+// Init: compute IBKR portfolio value from positions on first boot so Wealth shows it without
+// requiring user to visit Portfolio tab first
+(function initBrokerValue(){
+  if(positions&&positions.length>0){
+    let totalValue=0;
+    positions.forEach(p=>{
+      const cur=p.currency||'USD';
+      const currentEUR=toEUR(p.currentPrice,cur);
+      totalValue+=currentEUR*p.qty;
+    });
+    wealth.broker=Math.round(totalValue);
+    localStorage.setItem('fos_wealth',JSON.stringify(wealth));
+  }
+})();
+
+restoreFreedomPrefs();
+// Apply multi-mode UI state at startup
+(function applyMultiState(){
+  const multiOn=document.getElementById('multi-on').checked;
+  document.getElementById('simple-mode-card').style.display=multiOn?'none':'';
+  document.getElementById('multi-mode-card').style.display=multiOn?'':'none';
+  if(multiOn)renderPhasesList();
+})();
+updateFreedom();
+updateFXDisplay();
+applyPrivateMode();
+const stale=!fxFetchedAt||(Date.now()-new Date(fxFetchedAt).getTime())>86400000;
+if(stale)fetchLiveFX();
+
+// Lock on startup: show setup if no PIN, otherwise lock screen
+// Face ID requires user tap to trigger (iOS Safari WebAuthn restriction)
+(function initLock(){
+  if(!pinIsSet()){
+    showLockUI('setup-screen');
+  } else {
+    showLockUI('lock-screen');
+  }
+})();
+
+// Re-lock when app comes back to foreground after being away (page visibility API)
+let lastVisibleAt=Date.now();
+document.addEventListener('visibilitychange',()=>{
+  if(document.hidden){
+    lastVisibleAt=Date.now();
+  } else {
+    // Coming back to app - if more than 60 seconds since last seen, lock
+    if(pinIsSet()&&Date.now()-lastVisibleAt>60000){
+      lockNow();
+    }
+  }
+});
+</script>
+</body>
+</html>
