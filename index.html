@@ -573,6 +573,29 @@
     <button class="btn btn-secondary" style="width:100%;margin-top:10px;" onclick="addPhase()">+ Add country phase</button>
   </div>
 
+  <!-- JOINT TOGGLE -->
+  <div class="card">
+    <div class="toggle-line" style="border-top:none;margin-top:0;">
+      <div>
+        <div class="toggle-title">Joint (me + partner)</div>
+        <div class="toggle-sub">Combine both portfolios into one household FI date.</div>
+      </div>
+      <label class="switch"><input type="checkbox" id="joint-on" onchange="updateFreedom()"><span class="switch-slider"></span></label>
+    </div>
+    <div id="joint-inputs" style="display:none;">
+      <div class="proj-row" style="border-top:0.5px solid var(--border);margin-top:12px;padding-top:14px;"><div style="color:var(--text2);font-size:13px;">Partner invested assets</div><div class="proj-val" id="freedom-partner-val">—</div></div>
+      <p class="api-note" style="margin:6px 0 12px;">Upload partner CSV in the Partner tab. Combined capital and monthly below.</p>
+      <div class="slider-block">
+        <div class="slider-header"><span class="slider-label">Partner monthly investment (€)</span><input class="slider-input" id="partner-invest-val" type="number" inputmode="decimal" value="1000" oninput="syncSlider('partner-invest','partner-invest-val');updateFreedom()"></div>
+        <input type="range" min="0" max="15000" step="100" value="1000" id="partner-invest" oninput="syncInput('partner-invest','partner-invest-val');updateFreedom()">
+      </div>
+      <div class="slider-block">
+        <div class="slider-header"><span class="slider-label">Household income target (€/mo, today's money)</span><input class="slider-input" id="joint-income-val" type="number" inputmode="decimal" value="10000" oninput="syncSlider('joint-income','joint-income-val');updateFreedom()"></div>
+        <input type="range" min="2000" max="40000" step="500" value="10000" id="joint-income" oninput="syncInput('joint-income','joint-income-val');updateFreedom()">
+      </div>
+    </div>
+  </div>
+
   <!-- Projection -->
   <div class="card">
     <div class="card-title" id="proj-title">Full trajectory</div>
@@ -583,48 +606,19 @@
 
 <!-- PARTNER TAB -->
 <div id="screen-partner" class="screen">
-  <div class="screen-header"><div class="screen-title">Partner</div><div class="screen-sub">Joint household independence</div></div>
-  <div class="card"><div class="retire-hero"><div class="retire-year" id="joint-ret-year">—</div><div class="retire-age" id="joint-ret-age"></div><div class="retire-target" id="joint-ret-target"></div></div></div>
+  <div class="screen-header"><div class="screen-title">Partner</div><div class="screen-sub">Upload your partner's portfolio</div></div>
 
-  <!-- Partner portfolio upload -->
   <div class="card">
     <div class="card-title">Partner portfolio</div>
-    <div class="proj-row" style="margin-bottom:12px;"><div style="color:var(--text2);font-size:13px;">Partner invested assets (IBKR)</div><div class="proj-val" id="partner-value">No CSV uploaded yet</div></div>
+    <div class="proj-row" style="margin-bottom:14px;"><div style="color:var(--text2);font-size:13px;">Partner invested assets (IBKR)</div><div class="proj-val" id="partner-value">No CSV uploaded yet</div></div>
     <input type="file" id="partner-csv" class="csv-upload" accept=".csv" onchange="importPartnerCSV(event)">
     <label for="partner-csv" class="btn btn-secondary" style="width:100%;display:block;text-align:center;cursor:pointer;">Upload partner IBKR statement (CSV)</label>
-    <p class="api-note" style="margin-top:8px;">Partner shares their IBKR Activity Statement CSV (WhatsApp / AirDrop). Upload it here. Re-upload whenever they send a fresh one. You cannot edit their data; this is a read-only snapshot.</p>
+    <p class="api-note" style="margin-top:8px;">Your partner shares their IBKR Activity Statement CSV (WhatsApp / AirDrop). Upload it here, and re-upload whenever they send a fresh one. You cannot edit their data; this is a read-only snapshot.</p>
   </div>
 
-  <!-- Joint assumptions -->
   <div class="card">
-    <div class="card-title">Joint plan</div>
-    <div class="slider-block">
-      <div class="slider-header"><span class="slider-label">Your monthly investment (€)</span><input class="slider-input" id="joint-self-invest-val" type="number" inputmode="decimal" value="1000" oninput="syncSlider('joint-self-invest','joint-self-invest-val');updateJoint()"></div>
-      <input type="range" min="0" max="15000" step="100" value="1000" id="joint-self-invest" oninput="syncInput('joint-self-invest','joint-self-invest-val');updateJoint()">
-    </div>
-    <div class="slider-block">
-      <div class="slider-header"><span class="slider-label">Partner monthly investment (€)</span><input class="slider-input" id="partner-invest-val" type="number" inputmode="decimal" value="1000" oninput="syncSlider('partner-invest','partner-invest-val');updateJoint()"></div>
-      <input type="range" min="0" max="15000" step="100" value="1000" id="partner-invest" oninput="syncInput('partner-invest','partner-invest-val');updateJoint()">
-    </div>
-    <div class="slider-block">
-      <div class="slider-header"><span class="slider-label">Household income target (€/mo, today's money)</span><input class="slider-input" id="joint-income-val" type="number" inputmode="decimal" value="10000" oninput="syncSlider('joint-income','joint-income-val');updateJoint()"></div>
-      <input type="range" min="2000" max="40000" step="500" value="10000" id="joint-income" oninput="syncInput('joint-income','joint-income-val');updateJoint()">
-    </div>
-  </div>
-
-  <!-- Combined breakdown -->
-  <div class="card">
-    <div class="card-title">Combined starting capital</div>
-    <div class="proj-row"><div style="color:var(--text2);font-size:13px;">Your IBKR portfolio</div><div class="proj-val" id="joint-self-assets">—</div></div>
-    <div class="proj-row"><div style="color:var(--text2);font-size:13px;">Partner IBKR portfolio</div><div class="proj-val" id="joint-partner-assets">—</div></div>
-    <div class="proj-row" style="border-top:1px solid var(--green);padding-top:10px;margin-top:4px;"><div style="color:var(--green);font-weight:600;font-size:13px;">Combined invested</div><div class="proj-val green" id="joint-combined-assets">—</div></div>
-  </div>
-
-  <!-- Joint trajectory -->
-  <div class="card">
-    <div class="card-title">Joint trajectory</div>
-    <p class="api-note" style="margin-bottom:12px;">Uses the same return and inflation assumptions you set in the Freedom tab.</p>
-    <div id="joint-proj"></div>
+    <div class="card-title">How joint planning works</div>
+    <p class="api-note">Once partner portfolio is uploaded, go to the Freedom tab and turn on the "Joint (me + partner)" toggle. You will then see when you both reach financial independence together, using combined capital, combined monthly investment, and a household income target.</p>
   </div>
 </div>
 
@@ -2203,10 +2197,6 @@ function restoreFreedomPrefs(){
   try{
     const j=JSON.parse(localStorage.getItem('fos_joint')||'null');
     if(j){
-      if(j.selfInvest!=null){
-        document.getElementById('joint-self-invest-val').value=j.selfInvest;
-        document.getElementById('joint-self-invest').value=Math.min(j.selfInvest,15000);
-      }
       if(j.partnerInvest!=null){
         document.getElementById('partner-invest-val').value=j.partnerInvest;
         document.getElementById('partner-invest').value=Math.min(j.partnerInvest,15000);
@@ -2214,6 +2204,11 @@ function restoreFreedomPrefs(){
       if(j.jointIncome!=null){
         document.getElementById('joint-income-val').value=j.jointIncome;
         document.getElementById('joint-income').value=Math.min(Math.max(j.jointIncome,2000),40000);
+      }
+      if(j.jointOn!=null){
+        document.getElementById('joint-on').checked=j.jointOn;
+        const ji=document.getElementById('joint-inputs');
+        if(ji)ji.style.display=j.jointOn?'':'none';
       }
     }
   }catch(e){console.warn('Failed to restore joint prefs:',e);}
@@ -2292,40 +2287,65 @@ function importPartnerCSV(event){
   const file=event.target.files[0];if(!file)return;
   const reader=new FileReader();
   reader.onload=e=>{
-    const rows=e.target.result.split('\n').map(r=>r.split(','));
-    let totalEUR=0,count=0;
+    const text=e.target.result;
+    const rows=text.split(String.fromCharCode(10)).map(r=>parseCsvLine(r));
+    // PRIMARY: read the authoritative Net Asset Value -> Total row (IBKR already computed it in EUR base)
+    let navTotal=0;
+    rows.forEach(r=>{
+      if(r[0]==='Net Asset Value'&&r[1]==='Data'&&r[2]&&r[2].trim()==='Total'){
+        const v=parseFloat(r[6]); // Current Total column
+        if(!isNaN(v))navTotal=v;
+      }
+    });
+    // FALLBACK: sum Open Positions (Value column = index 11) + cash
+    let posSum=0,count=0,cashEUR=0;
     rows.forEach(r=>{
       if(r[0]==='Open Positions'&&r[1]==='Data'&&r[2]==='Summary'&&r[5]){
-        const qty=parseFloat(r[6]);
-        const closePrice=parseFloat(r[10]);
         const cur=(r[4]||'EUR').trim();
-        if(!isNaN(qty)&&qty>0&&!isNaN(closePrice)){
-          totalEUR+=toEUR(closePrice*qty,cur);
-          count++;
-        }
+        const val=parseFloat(r[11]); // IBKR-computed Value in native currency
+        if(!isNaN(val)){posSum+=toEUR(val,cur);count++;}
       }
-    });
-    // Also capture cash from Net Asset Value if present (base currency EUR)
-    let cashEUR=0;
-    rows.forEach(r=>{
       if(r[0]==='Net Asset Value'&&r[1]==='Data'&&r[2]&&r[2].trim()==='Cash'){
         const v=parseFloat(r[6]);
-        if(!isNaN(v))cashEUR=v; // base currency is EUR in IBKR statements
+        if(!isNaN(v))cashEUR=v;
       }
     });
-    if(count>0){
-      partnerValue=Math.round(totalEUR+cashEUR);
+    const finalValue=navTotal>0?navTotal:(posSum+cashEUR);
+    if(finalValue>0){
+      partnerValue=Math.round(finalValue);
       partnerUpdatedAt='CSV '+new Date().toLocaleDateString();
       localStorage.setItem('fos_partner_value',partnerValue);
       localStorage.setItem('fos_partner_updated',partnerUpdatedAt);
-      flash('Partner portfolio: '+count+' positions, '+fmt(partnerValue));
+      flash('Partner portfolio: '+fmt(partnerValue));
+      updatePartner();
       updateFreedom();
-    } else flash('No positions found - check CSV');
+    } else {
+      alert('Could not read portfolio value from this CSV. Make sure it is an IBKR Activity Statement (not Portfolio Analyst). It should contain a "Net Asset Value" section.');
+    }
   };
   reader.readAsText(file);event.target.value='';
 }
 
-function toggleJoint(){updateJoint();}
+// Robust CSV line parser - handles quoted fields containing commas
+function parseCsvLine(line){
+  const out=[];let cur='';let inQ=false;
+  for(let i=0;i<line.length;i++){
+    const ch=line[i];
+    if(ch==='"'){inQ=!inQ;}
+    else if(ch===','&&!inQ){out.push(cur);cur='';}
+    else cur+=ch;
+  }
+  out.push(cur);
+  return out.map(s=>s.trim());
+}
+
+function toggleJoint(){updateFreedom();}
+
+function updatePartner(){
+  // Partner tab: just refresh the partner value label
+  const pvEl=document.getElementById('partner-value');
+  if(pvEl)pvEl.textContent=partnerValue>0?fmt(partnerValue)+(partnerUpdatedAt?' · '+partnerUpdatedAt:''):'No CSV uploaded yet';
+}
 
 function updateFreedom(){
   const income=parseFloat(document.getElementById('sl-income-val').value)||5000;
@@ -2338,12 +2358,27 @@ function updateFreedom(){
   if(inflBlock)inflBlock.style.display=inflOn?'':'none';
   const inflation=inflOn?((inflEl?parseFloat(inflEl.value):2.8)/100):0;
   const realReturn=(1+nominal)/(1+inflation)-1;
-  const target=income*12*25;
   const multiOn=document.getElementById('multi-on').checked;
   const simpleInvest=parseFloat(document.getElementById('simple-invest-val').value)||0;
   localStorage.setItem('fos_freedom',JSON.stringify({
     income,age,assets,nominal:Math.round(nominal*1000)/10,inflOn,inflation:Math.round(inflation*1000)/10,multiOn,simpleInvest
   }));
+
+  // ── Joint toggle ──
+  const jointOn=document.getElementById('joint-on').checked;
+  const jointInputs=document.getElementById('joint-inputs');
+  if(jointInputs)jointInputs.style.display=jointOn?'':'none';
+  const partnerInvest=parseFloat(document.getElementById('partner-invest-val').value)||0;
+  const jointIncome=parseFloat(document.getElementById('joint-income-val').value)||10000;
+  localStorage.setItem('fos_joint',JSON.stringify({partnerInvest,jointIncome,jointOn}));
+  const fpv=document.getElementById('freedom-partner-val');
+  if(fpv)fpv.textContent=partnerValue>0?fmt(partnerValue):'No CSV in Partner tab yet';
+
+  // Effective inputs depend on joint toggle
+  const startCapital=jointOn?(assets+partnerValue):assets;
+  const effIncome=jointOn?jointIncome:income;
+  const target=effIncome*12*25;
+  const partnerMonthly=jointOn?partnerInvest:0;
 
   let getMonthlyForYear;
   if(multiOn){
@@ -2352,27 +2387,28 @@ function updateFreedom(){
       const yr=CURRENT_YEAR+off;
       for(const ph of phases){
         const end=ph.endYear===null?9999:ph.endYear;
-        if(yr>=ph.startYear&&yr<end)return ph.monthly;
+        if(yr>=ph.startYear&&yr<end)return ph.monthly+partnerMonthly;
       }
-      return 0;
+      return partnerMonthly;
     };
   } else {
-    getMonthlyForYear=()=>simpleInvest;
+    getMonthlyForYear=()=>simpleInvest+partnerMonthly;
   }
 
-  let p=assets,years=0;
+  let p=startCapital,years=0;
   while(p<target&&years<60){
     p=p*(1+realReturn)+getMonthlyForYear(years)*12;
     years++;
   }
   const fiAge=age+years, fiYear=CURRENT_YEAR+years;
   document.getElementById('ret-year').textContent=years<60?fiYear:'60+';
-  document.getElementById('ret-age-result').textContent='Age '+fiAge+' · in '+years+' years';
+  document.getElementById('ret-age-result').textContent=(jointOn?'Household FI · age ':'Age ')+fiAge+' · in '+years+' years';
+  const tLabel=jointOn?'Household target: ':'Target: ';
   if(inflOn){
-    const futureNominal=income*Math.pow(1+inflation,years);
-    document.getElementById('ret-target').textContent='Target: '+fmt(target)+' ('+fmt(income)+'/mo today · ~'+fmt(futureNominal)+'/mo nominal at FI)';
+    const futureNominal=effIncome*Math.pow(1+inflation,years);
+    document.getElementById('ret-target').textContent=tLabel+fmt(target)+' ('+fmt(effIncome)+'/mo today · ~'+fmt(futureNominal)+'/mo nominal at FI)';
   } else {
-    document.getElementById('ret-target').textContent='Target: '+fmt(target)+' ('+fmt(income)+'/mo × 25 years)';
+    document.getElementById('ret-target').textContent=tLabel+fmt(target)+' ('+fmt(effIncome)+'/mo × 25 years)';
   }
 
   const milestones=new Set();
@@ -2386,73 +2422,17 @@ function updateFreedom(){
     });
   }
   const sortedYears=[...milestones].sort((a,b)=>a-b).filter(y=>y>0&&y<=years+1);
-  let simP=assets,simY=0;const rows=[];
+  let simP=startCapital,simY=0;const rows=[];
   for(const y of sortedYears){
     while(simY<y&&simY<years){simP=simP*(1+realReturn)+getMonthlyForYear(simY)*12;simY++;}
     const pct=Math.min(100,Math.round((simP/target)*100));
     const isFI=y===years;
     let label='Year '+y+' · Age '+(age+y)+' ('+(CURRENT_YEAR+y)+')';
     if(multiOn){const yr=CURRENT_YEAR+y;const sh=phases.find(ph=>ph.startYear===yr);if(sh)label+=' '+countryFlag(sh.country);}
-    if(isFI)label+=' 🎯 FI';
+    if(isFI)label+=jointOn?' 🎯 Joint FI':' 🎯 FI';
     rows.push(`<div class="proj-row" style="${isFI?'border-top:1px solid var(--green);padding-top:10px;margin-top:4px;':''}"><div class="proj-year" style="${isFI?'color:var(--green);font-weight:600;':''}">${label}</div><div class="proj-val ${pct>=100?'green':''}">${fmt(simP)} · ${pct}%</div></div>`);
   }
   document.getElementById('freedom-proj').innerHTML=rows.join('');
-}
-
-// ── Joint household projection (Partner tab) ───────────────────────
-function updateJoint(){
-  // Pull shared assumptions from Freedom inputs
-  const age=parseFloat(document.getElementById('sl-age-val').value)||33;
-  const selfAssets=parseFloat(document.getElementById('sl-assets-val').value)||0;
-  const nominal=(parseFloat(document.getElementById('sl-rate-val').value)||7)/100;
-  const inflOn=document.getElementById('sl-infl-on').checked;
-  const inflEl=document.getElementById('sl-infl-val');
-  const inflation=inflOn?((inflEl?parseFloat(inflEl.value):2.8)/100):0;
-  const realReturn=(1+nominal)/(1+inflation)-1;
-
-  const selfInvest=parseFloat(document.getElementById('joint-self-invest-val').value)||0;
-  const partnerInvest=parseFloat(document.getElementById('partner-invest-val').value)||0;
-  const jointIncome=parseFloat(document.getElementById('joint-income-val').value)||10000;
-  localStorage.setItem('fos_joint',JSON.stringify({selfInvest,partnerInvest,jointIncome}));
-
-  // Partner value label
-  const pvEl=document.getElementById('partner-value');
-  if(pvEl)pvEl.textContent=partnerValue>0?fmt(partnerValue)+(partnerUpdatedAt?' · '+partnerUpdatedAt:''):'No CSV uploaded yet';
-
-  const combined=selfAssets+partnerValue;
-  const target=jointIncome*12*25;
-  const monthly=selfInvest+partnerInvest;
-
-  document.getElementById('joint-self-assets').textContent=fmt(selfAssets);
-  document.getElementById('joint-partner-assets').textContent=fmt(partnerValue);
-  document.getElementById('joint-combined-assets').textContent=fmt(combined);
-
-  let p=combined,years=0;
-  while(p<target&&years<60){p=p*(1+realReturn)+monthly*12;years++;}
-  const fiAge=age+years, fiYear=CURRENT_YEAR+years;
-  document.getElementById('joint-ret-year').textContent=years<60?fiYear:'60+';
-  document.getElementById('joint-ret-age').textContent='Household FI · age '+fiAge+' · in '+years+' years';
-  if(inflOn){
-    const futureNominal=jointIncome*Math.pow(1+inflation,years);
-    document.getElementById('joint-ret-target').textContent='Household target: '+fmt(target)+' ('+fmt(jointIncome)+'/mo today · ~'+fmt(futureNominal)+'/mo nominal at FI)';
-  } else {
-    document.getElementById('joint-ret-target').textContent='Household target: '+fmt(target)+' ('+fmt(jointIncome)+'/mo × 25 years)';
-  }
-
-  const milestones=new Set();
-  for(let y=5;y<=years;y+=5)milestones.add(y);
-  milestones.add(years);
-  const sortedYears=[...milestones].sort((a,b)=>a-b).filter(y=>y>0&&y<=years+1);
-  let simP=combined,simY=0;const rows=[];
-  for(const y of sortedYears){
-    while(simY<y&&simY<years){simP=simP*(1+realReturn)+monthly*12;simY++;}
-    const pct=Math.min(100,Math.round((simP/target)*100));
-    const isFI=y===years;
-    let label='Year '+y+' · Age '+(age+y)+' ('+(CURRENT_YEAR+y)+')';
-    if(isFI)label+=' 🎯 Joint FI';
-    rows.push(`<div class="proj-row" style="${isFI?'border-top:1px solid var(--green);padding-top:10px;margin-top:4px;':''}"><div class="proj-year" style="${isFI?'color:var(--green);font-weight:600;':''}">${label}</div><div class="proj-val ${pct>=100?'green':''}">${fmt(simP)} · ${pct}%</div></div>`);
-  }
-  document.getElementById('joint-proj').innerHTML=rows.join('');
 }
 
 // ── Insight ────────────────────────────────────────────────────────
@@ -2531,11 +2511,7 @@ function showScreen(id,btn){
   }
   if(id==='portfolio')renderPortfolio();
   if(id==='partner'){
-    restoreFreedomPrefs();
-    if(wealth.broker>0){
-      document.getElementById('sl-assets-val').value=Math.round(wealth.broker);
-    }
-    updateJoint();
+    updatePartner();
   }
   if(id==='trades'){
     const tlast=document.getElementById('trades-last');
