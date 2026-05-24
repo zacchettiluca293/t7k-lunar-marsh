@@ -527,6 +527,10 @@
       <input type="range" min="20" max="65" step="1" value="33" id="sl-age" oninput="syncInput('sl-age','sl-age-val');updateFreedom()">
     </div>
     <div class="slider-block">
+      <div class="slider-header"><span class="slider-label">Life expectancy (age)</span><input class="slider-input" id="sl-life-val" type="number" inputmode="numeric" value="90" oninput="syncSlider('sl-life','sl-life-val');updateFreedom()"></div>
+      <input type="range" min="70" max="105" step="1" value="90" id="sl-life" oninput="syncInput('sl-life','sl-life-val');updateFreedom()">
+    </div>
+    <div class="slider-block">
       <div class="slider-header"><span class="slider-label">Current IBKR portfolio (€)</span><input class="slider-input" id="sl-assets-val" type="number" inputmode="decimal" value="86158" oninput="syncSlider('sl-assets','sl-assets-val');updateFreedom()"></div>
       <input type="range" min="0" max="2000000" step="1000" value="86158" id="sl-assets" oninput="syncInput('sl-assets','sl-assets-val');updateFreedom()">
     </div>
@@ -2170,6 +2174,10 @@ function restoreFreedomPrefs(){
       document.getElementById('sl-age-val').value=saved.age;
       document.getElementById('sl-age').value=Math.min(Math.max(saved.age,20),65);
     }
+    if(saved.lifeExp!=null){
+      document.getElementById('sl-life-val').value=saved.lifeExp;
+      document.getElementById('sl-life').value=Math.min(Math.max(saved.lifeExp,70),105);
+    }
     if(saved.assets!=null){
       document.getElementById('sl-assets-val').value=saved.assets;
       document.getElementById('sl-assets').value=Math.min(saved.assets,2000000);
@@ -2350,6 +2358,7 @@ function updatePartner(){
 function updateFreedom(){
   const income=parseFloat(document.getElementById('sl-income-val').value)||5000;
   const age=parseFloat(document.getElementById('sl-age-val').value)||33;
+  const lifeExp=parseFloat(document.getElementById('sl-life-val').value)||90;
   const assets=parseFloat(document.getElementById('sl-assets-val').value)||0;
   const nominal=(parseFloat(document.getElementById('sl-rate-val').value)||7)/100;
   const inflEl=document.getElementById('sl-infl-val');
@@ -2361,7 +2370,7 @@ function updateFreedom(){
   const multiOn=document.getElementById('multi-on').checked;
   const simpleInvest=parseFloat(document.getElementById('simple-invest-val').value)||0;
   localStorage.setItem('fos_freedom',JSON.stringify({
-    income,age,assets,nominal:Math.round(nominal*1000)/10,inflOn,inflation:Math.round(inflation*1000)/10,multiOn,simpleInvest
+    income,age,lifeExp,assets,nominal:Math.round(nominal*1000)/10,inflOn,inflation:Math.round(inflation*1000)/10,multiOn,simpleInvest
   }));
 
   // ── Joint toggle ──
@@ -2377,8 +2386,16 @@ function updateFreedom(){
   // Effective inputs depend on joint toggle
   const startCapital=jointOn?(assets+partnerValue):assets;
   const effIncome=jointOn?jointIncome:income;
-  const target=effIncome*12*25;
   const partnerMonthly=jointOn?partnerInvest:0;
+  // Capital needed at a given FI age = present value of an inflation-adjusted annuity
+  // that lasts (lifeExp - fiAgeAtThatPoint) years, growing at real return during retirement.
+  // PV = annualIncome * [1 - (1+r)^-n] / r   (r = real return; if r~0, fall back to n*income)
+  function capitalNeededAt(fiAgeNow){
+    const n=Math.max(1,lifeExp-fiAgeNow); // years in retirement
+    const annual=effIncome*12;
+    if(realReturn<=0.0001)return annual*n;
+    return annual*(1-Math.pow(1+realReturn,-n))/realReturn;
+  }
 
   let getMonthlyForYear;
   if(multiOn){
@@ -2396,19 +2413,24 @@ function updateFreedom(){
   }
 
   let p=startCapital,years=0;
-  while(p<target&&years<60){
+  // Each year, the bar to clear is the capital needed to fund retirement from THAT age to lifeExp.
+  while(years<60){
+    const needNow=capitalNeededAt(age+years);
+    if(p>=needNow)break;
     p=p*(1+realReturn)+getMonthlyForYear(years)*12;
     years++;
   }
   const fiAge=age+years, fiYear=CURRENT_YEAR+years;
+  const target=capitalNeededAt(fiAge); // final required capital at the FI age we landed on
+  const retirementYears=Math.max(0,lifeExp-fiAge);
   document.getElementById('ret-year').textContent=years<60?fiYear:'60+';
   document.getElementById('ret-age-result').textContent=(jointOn?'Household FI · age ':'Age ')+fiAge+' · in '+years+' years';
-  const tLabel=jointOn?'Household target: ':'Target: ';
+  const tLabel=jointOn?'Household need: ':'Need: ';
   if(inflOn){
     const futureNominal=effIncome*Math.pow(1+inflation,years);
-    document.getElementById('ret-target').textContent=tLabel+fmt(target)+' ('+fmt(effIncome)+'/mo today · ~'+fmt(futureNominal)+'/mo nominal at FI)';
+    document.getElementById('ret-target').textContent=tLabel+fmt(target)+' ('+fmt(effIncome)+'/mo today · funds age '+fiAge+'→'+lifeExp+', '+retirementYears+' yrs · ~'+fmt(futureNominal)+'/mo nominal at FI)';
   } else {
-    document.getElementById('ret-target').textContent=tLabel+fmt(target)+' ('+fmt(effIncome)+'/mo × 25 years)';
+    document.getElementById('ret-target').textContent=tLabel+fmt(target)+' ('+fmt(effIncome)+'/mo · funds age '+fiAge+'→'+lifeExp+', '+retirementYears+' yrs)';
   }
 
   const milestones=new Set();
