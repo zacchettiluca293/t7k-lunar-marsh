@@ -93,6 +93,10 @@
   .retire-year{font-size:52px;font-weight:700;letter-spacing:-2px;color:var(--green);}
   .retire-age{font-size:16px;color:var(--text2);margin-top:4px;}
   .retire-target{font-size:12px;color:var(--text3);margin-top:8px;}
+  .swr-badge{margin:16px auto 4px;max-width:260px;background:var(--bg3);border:0.5px solid var(--border);border-radius:14px;padding:14px 16px;}
+  .swr-rate{font-size:30px;font-weight:700;color:var(--text);letter-spacing:-1px;line-height:1;}
+  .swr-caption{font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:0.06em;margin-top:5px;}
+  .swr-detail{font-size:12px;color:var(--text2);margin-top:8px;line-height:1.45;}
   .insight-box{background:var(--bg3);border-radius:var(--radius-sm);padding:12px 14px;margin-bottom:10px;font-size:13px;line-height:1.6;color:var(--text2);}
   .insight-tag{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:6px;}
   .tag-good{color:var(--green);}.tag-warn{color:var(--amber);}.tag-info{color:var(--blue);}
@@ -513,7 +517,13 @@
 <!-- FREEDOM TAB -->
 <div id="screen-freedom" class="screen">
   <div class="screen-header"><div class="screen-title">Freedom</div><div class="screen-sub">When can you stop working?</div></div>
-  <div class="card"><div class="retire-hero"><div class="retire-year" id="ret-year">—</div><div class="retire-age" id="ret-age-result"></div><div class="retire-target" id="ret-target"></div></div></div>
+  <div class="card"><div class="retire-hero"><div class="retire-year" id="ret-year">—</div><div class="retire-age" id="ret-age-result"></div><div class="retire-target" id="ret-target"></div>
+    <div class="swr-badge" id="swr-badge">
+      <div class="swr-rate" id="swr-rate">—</div>
+      <div class="swr-caption" id="swr-caption">safe withdrawal rate</div>
+      <div class="swr-detail" id="swr-detail"></div>
+    </div>
+  </div></div>
 
   <!-- Assumptions -->
   <div class="card">
@@ -604,6 +614,21 @@
   <div class="card">
     <div class="card-title" id="proj-title">Full trajectory</div>
     <div id="freedom-proj"></div>
+  </div>
+
+  <!-- How the target is calculated -->
+  <div class="card">
+    <div class="card-title">How your number is calculated</div>
+    <div style="font-size:13px;color:var(--text2);line-height:1.6;">
+      <p style="margin:0 0 10px;">Your target is <strong style="color:var(--text);">annual income × a safe multiple</strong>. The multiple depends on how long retirement lasts (life expectancy minus the age you stop working):</p>
+      <div style="background:var(--bg3);border-radius:10px;padding:12px;margin-bottom:10px;">
+        <div style="display:flex;justify-content:space-between;padding:4px 0;"><span>~30 year retirement</span><span style="color:var(--text);font-weight:600;">25x · 4.0% withdrawal</span></div>
+        <div style="display:flex;justify-content:space-between;padding:4px 0;"><span>~40 year retirement</span><span style="color:var(--text);font-weight:600;">28x · 3.5% withdrawal</span></div>
+        <div style="display:flex;justify-content:space-between;padding:4px 0;"><span>~50 year retirement</span><span style="color:var(--text);font-weight:600;">31x · 3.25% withdrawal</span></div>
+      </div>
+      <p style="margin:0 0 10px;"><strong style="color:var(--text);">Why retiring younger needs more:</strong> if you stop at 45 and live to 90, your savings must survive 45 years of withdrawals and market crashes. The lower withdrawal rate protects against running out if a downturn hits early in retirement.</p>
+      <p style="margin:0;"><strong style="color:var(--text);">The trade-off, in plain terms:</strong> retire at 45 and every year is yours, but you need a bigger cushion and decades of discipline first. Retire at 60 and the target is smaller and safer, but you trade away your healthiest free years. The slider lets you see exactly what each choice costs.</p>
+    </div>
   </div>
 </div>
 
@@ -2387,14 +2412,19 @@ function updateFreedom(){
   const startCapital=jointOn?(assets+partnerValue):assets;
   const effIncome=jointOn?jointIncome:income;
   const partnerMonthly=jointOn?partnerInvest:0;
-  // Capital needed at a given FI age = present value of an inflation-adjusted annuity
-  // that lasts (lifeExp - fiAgeAtThatPoint) years, growing at real return during retirement.
-  // PV = annualIncome * [1 - (1+r)^-n] / r   (r = real return; if r~0, fall back to n*income)
+  // Approach B: life-expectancy-aware SAFE withdrawal multiple.
+  // Longer retirement -> lower safe withdrawal rate -> higher multiple.
+  // Grounded in withdrawal-rate research (Bengen 4% rule / Trinity, extended for long horizons):
+  //   ~30yr retirement: 4.0% SWR = 25x;  ~50yr retirement: ~3.25% SWR = 31x.
+  // This deliberately buffers sequence-of-returns risk (crashes early in retirement).
+  function safeMultiple(retirementYears){
+    if(retirementYears<=30)return 25;
+    if(retirementYears>=50)return 31;
+    return 25+(retirementYears-30)/(50-30)*(31-25); // linear 25x->31x between 30 and 50 yrs
+  }
   function capitalNeededAt(fiAgeNow){
     const n=Math.max(1,lifeExp-fiAgeNow); // years in retirement
-    const annual=effIncome*12;
-    if(realReturn<=0.0001)return annual*n;
-    return annual*(1-Math.pow(1+realReturn,-n))/realReturn;
+    return effIncome*12*safeMultiple(n);
   }
 
   let getMonthlyForYear;
@@ -2423,14 +2453,21 @@ function updateFreedom(){
   const fiAge=age+years, fiYear=CURRENT_YEAR+years;
   const target=capitalNeededAt(fiAge); // final required capital at the FI age we landed on
   const retirementYears=Math.max(0,lifeExp-fiAge);
+  const usedMultiple=safeMultiple(retirementYears);
+  // Read-only safe withdrawal rate = inverse of the multiple
+  const swrPct=(100/usedMultiple);
+  const swrRateEl=document.getElementById('swr-rate');
+  const swrDetailEl=document.getElementById('swr-detail');
+  if(swrRateEl)swrRateEl.textContent=swrPct.toFixed(2)+'%';
+  if(swrDetailEl)swrDetailEl.textContent=usedMultiple.toFixed(1)+'x · '+retirementYears+'-year retirement (age '+fiAge+'→'+lifeExp+'). Longer retirement lowers the safe rate, raising the target.';
   document.getElementById('ret-year').textContent=years<60?fiYear:'60+';
   document.getElementById('ret-age-result').textContent=(jointOn?'Household FI · age ':'Age ')+fiAge+' · in '+years+' years';
   const tLabel=jointOn?'Household need: ':'Need: ';
   if(inflOn){
     const futureNominal=effIncome*Math.pow(1+inflation,years);
-    document.getElementById('ret-target').textContent=tLabel+fmt(target)+' ('+fmt(effIncome)+'/mo today · funds age '+fiAge+'→'+lifeExp+', '+retirementYears+' yrs · ~'+fmt(futureNominal)+'/mo nominal at FI)';
+    document.getElementById('ret-target').textContent=tLabel+fmt(target)+' = '+usedMultiple.toFixed(1)+'x ('+fmt(effIncome)+'/mo today · funds age '+fiAge+'→'+lifeExp+', '+retirementYears+' yrs · ~'+fmt(futureNominal)+'/mo nominal at FI)';
   } else {
-    document.getElementById('ret-target').textContent=tLabel+fmt(target)+' ('+fmt(effIncome)+'/mo · funds age '+fiAge+'→'+lifeExp+', '+retirementYears+' yrs)';
+    document.getElementById('ret-target').textContent=tLabel+fmt(target)+' = '+usedMultiple.toFixed(1)+'x ('+fmt(effIncome)+'/mo · funds age '+fiAge+'→'+lifeExp+', '+retirementYears+' yrs)';
   }
 
   const milestones=new Set();
