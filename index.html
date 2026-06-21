@@ -324,7 +324,7 @@
   <div class="row">
     <div>
       <label>Category</label>
-      <select id="tx-cat">
+      <select id="tx-cat" onchange="onCategoryChange(this.value)">
         <optgroup label="Essentials"><option>Housing</option><option>Utilities</option><option>Telecom</option><option>Groceries</option><option>Transport</option><option>Health</option><option>Pet</option><option>Baby</option></optgroup>
         <optgroup label="Lifestyle"><option>Dining Out</option><option>Travel</option><option>Entertainment</option><option>Shopping</option><option>Personal Care</option></optgroup>
         <optgroup label="Financial"><option>IBKR</option><option>Sobha</option><option>Crypto</option><option>Savings</option></optgroup>
@@ -351,8 +351,8 @@
   <div class="year-tabs" id="year-tabs"></div>
   <div class="month-nav" id="month-nav"></div>
   <div class="metric-grid">
-    <div class="metric"><div class="metric-label">Income</div><div class="metric-value green" id="ov-income">€0</div><div id="ov-income-mom"></div></div>
-    <div class="metric"><div class="metric-label">Spent</div><div class="metric-value red" id="ov-spent">€0</div><div id="ov-spent-mom"></div></div>
+    <div class="metric"><div class="metric-label">Income</div><div class="metric-value" id="ov-income">€0</div><div id="ov-income-mom"></div></div>
+    <div class="metric"><div class="metric-label">Spent</div><div class="metric-value" id="ov-spent">€0</div><div id="ov-spent-mom"></div></div>
     <div class="metric"><div class="metric-label">Net</div><div class="metric-value" id="ov-net">€0</div><div id="ov-net-mom"></div></div>
     <div class="metric"><div class="metric-label">Savings rate</div><div class="metric-value" id="ov-sr">—</div><div id="ov-sr-mom"></div></div>
   </div>
@@ -1225,7 +1225,22 @@ function updateFXDisplay(){
 }
 
 // ── Log ────────────────────────────────────────────────────────────
-function setType(t,btn){txType=t;document.querySelectorAll('.toggle-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');}
+function setType(t,btn){txType=t;document.querySelectorAll('.toggle-btn').forEach(b=>b.classList.remove('active'));if(btn)btn.classList.add('active');}
+
+// Auto-assign expense/income type based on chosen category
+const INCOME_CATEGORIES=new Set(['Salary','Bonus','Side income','Refund']);
+function onCategoryChange(cat){
+  const newType=INCOME_CATEGORIES.has(cat)?'income':'expense';
+  if(newType===txType)return; // no change needed
+  txType=newType;
+  // Sync the visual toggle buttons
+  document.querySelectorAll('.toggle-btn').forEach(b=>{
+    b.classList.remove('active');
+    if((newType==='income'&&b.classList.contains('income'))||(newType==='expense'&&b.classList.contains('expense'))){
+      b.classList.add('active');
+    }
+  });
+}
 function toggleAmort(){document.getElementById('amort-extra').classList.toggle('visible',document.getElementById('amort-check').checked);}
 function logTransaction(){
   const amount=parseFloat(document.getElementById('tx-amount').value);
